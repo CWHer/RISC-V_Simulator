@@ -3,14 +3,16 @@
 #include"register.hpp"
 #include"memory.hpp"
 
+
+#ifndef _EXECUTE_
+#define _EXECUTE_
 class Execute
 {
     private:
         Instruction *opt;
         Register *reg;
-        Memory *mem;   
         unsigned addr;
-        unsigned sext(unsigned x,int n) //sign-extend   符号扩展：将扩展后的数据的高(32-n)位置为立即数的最高位。
+        unsigned sext(unsigned x,int n) //sign-extend:将扩展后的数据的高(32-n)位置为立即数的最高位。
         {
             return (x>>n)&1?x|0xffffffff>>n<<n:x;
         }     
@@ -87,4 +89,5 @@ class Execute
 
         }
 };
+#endif
 

@@ -1,4 +1,8 @@
 class Memory
 {
-    unsigned data[(1<<20)+50];
+    friend class Execute;
+    private:
+        unsigned data[(1<<20)+50];
+    public:
+        
 };

@@ -1,4 +1,7 @@
 #include<cstring>
+
+#ifndef _REGISTER_
+#define _REGISTER_
 class Register
 {
     friend class Execute;
@@ -9,6 +12,7 @@ class Register
         Register()
         {
             std::memset(data,0,sizeof(data));
+            pc=0;
         }
-
 };
+#endif

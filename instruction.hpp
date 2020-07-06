@@ -1,6 +1,9 @@
 #include<cstdio>
 #include"RISC-V.h"
 
+
+#ifndef _INSTRUCTION_
+#define _INSTRUCTION_
 class Instruction
 {
     friend class RISC_V;
@@ -133,3 +136,4 @@ class Instruction
             }
         }
 };
+#endif
