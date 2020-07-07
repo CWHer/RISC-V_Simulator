@@ -3,16 +3,27 @@
 `to do`
 
 - [x] fix reg[0] bug
-- [ ] fix execute bug/how execute jal&jalr...
-- [ ] fix program counter/when to execute next_pc?
+- [x] fix execute bug/how execute jal&jalr...
+- [x] fix program counter/when to execute next_pc?
+- [ ] refactor EXE&MEM&WB
+- [ ] separate instructions executing section
 - [x] mem access（pre
 - [x] writeback（pre
 - [ ] 5-stage pipeline
+- [ ] tomasulo
+- [ ] prediction
+- [ ] various hazards
 - [ ] and so on……
 
-#### 目前版本
+### 目前版本
 
-一个逻辑混乱的充满bug的半成品
+一个逻辑混乱的半成品，但能过样例了
 
-~~所以jal和jalr的执行顺序到底是什么....~~
+~~重构警告~~
+
+### 1.0
+
+一个没有并行的简易版本
+
+~~即将完成~~
 

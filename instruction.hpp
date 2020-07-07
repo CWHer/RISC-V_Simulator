@@ -15,9 +15,11 @@ class Instruction
         unsigned imm;
         Basictypes basictype;
         Instructiontypes type;
+        bool isend;
     public:
         Instruction()
         {
+            isend=0;
             imm=seq=0;
             rs1=rs2=rd=0;
             opcode=func3=func7=0;
@@ -36,8 +38,8 @@ class Instruction
         void decode()
         {
             opcode=seq&127;
-            func3=(seq>>12)&7;
-            func7=(seq>>25)&127;
+            func3=seq>>12&7;
+            func7=seq>>25&127;
             switch (opcode)
             {
                 case 55:basictype=U,type=LUI;break;
@@ -115,17 +117,26 @@ class Instruction
                     break;
                 }
             }
-            rs1=(seq>>15)&31;
-            rs2=(seq>>20)&31;
-            rd=(seq>>7)&31;
+            rs1=seq>>15&31;
+            rs2=seq>>20&31;
+            rd=seq>>7&31;
             switch (basictype) 
             {
                 case I:imm=seq>>20;break;
-                case S:imm=((seq>>7)&31)+(seq>>25<<5);break;
-                case B:imm=((seq>>8<<1)&15)+((seq>>25<<5)&1023)+((seq>>7)&1<<11)+(seq>>31<<12);break;
+                case S:imm=(seq>>7&31)+(seq>>25<<5);break;
+                case B:imm=(seq>>8<<1&31)+(seq>>25<<5&2047)+((seq>>7&1)<<11)+(seq>>31<<12);break;
                 case U:imm=seq>>12<<12;break;
-                case J:imm=((seq>>21<<1)&1023)+((seq>>20)&1<<11)+((seq>>12)&255<<12)+(seq>>31<<20);break;
+                case J:imm=(seq>>21<<1&2047)+((seq>>20&1)<<11)+((seq>>12&255)<<12)+(seq>>31<<20);break;
             }
         }
+        bool empty()
+        {
+            return isend;
+        }
+        //debug
+        // Instructiontypes gettype()
+        // {
+        //     return type;
+        // }
 };
 #endif

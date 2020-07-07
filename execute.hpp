@@ -14,7 +14,7 @@ class Execute
         Memory *mem;
         unsigned addr;
         unsigned temp_result;
-        unsigned sext(unsigned x,int n) //sign-extend: fill imm with (32-n)位置为立即数的最高位。
+        unsigned sext(unsigned x,int n) //sign-extend
         {
             return (x>>n)&1?x|0xffffffff>>n<<n:x;
         }     
@@ -24,9 +24,9 @@ class Execute
         void run()
         {
             unsigned &pc=reg->getpc();
-            unsigned rd=opt->rd,shamt=opt->rs2;
+            unsigned shamt=opt->rs2,imm=opt->imm;
             unsigned rs1=opt->rs1,rs2=opt->rs2;
-            unsigned imm=opt->imm;
+            if (opt->seq==0x00c68223) opt->isend=1;
             switch (opt->type)
             {
                 case LUI:temp_result=imm;break;
@@ -35,23 +35,23 @@ class Execute
                 //jump
                 case JAL:   //J type
                 {
-                    temp_result=pc+4;
-                    pc+=sext(imm,21);
+                    temp_result=pc;
+                    pc+=sext(imm,20)-4;
                     break;
                 }
                 case JALR:  //I type
                 {
-                    temp_result=pc+4;
-                    pc=setlow0(reg->getdata(rs1)+sext(imm,12));
+                    temp_result=pc;
+                    pc=setlow0(reg->getdata(rs1)+sext(imm,11));
                     break;
                 }
                 //branch    //B type
-                case BEQ:pc+=sext(imm,13)*(reg->getdata(rs1)==reg->getdata(rs2));break;
-                case BNE:pc+=sext(imm,13)*(reg->getdata(rs1)!=reg->getdata(rs2));break;
-                case BLT:pc+=sext(imm,13)*((int)reg->getdata(rs1)<(int)reg->getdata(rs2));break;
-                case BGE:pc+=sext(imm,13)*((int)reg->getdata(rs1)>(int)reg->getdata(rs2));break;
-                case BLTU:pc+=sext(imm,13)*(reg->getdata(rs1)<reg->getdata(rs2));break;
-                case BGEU:pc+=sext(imm,13)*(reg->getdata(rs1)>reg->getdata(rs2));break;
+                case BEQ:pc+=(sext(imm,12)-4)*(reg->getdata(rs1)==reg->getdata(rs2));break;
+                case BNE:pc+=(sext(imm,12)-4)*(reg->getdata(rs1)!=reg->getdata(rs2));break;
+                case BLT:pc+=(sext(imm,12)-4)*((int)reg->getdata(rs1)<(int)reg->getdata(rs2));break;
+                case BGE:pc+=(sext(imm,12)-4)*((int)reg->getdata(rs1)>=(int)reg->getdata(rs2));break;
+                case BLTU:pc+=(sext(imm,12)-4)*(reg->getdata(rs1)<reg->getdata(rs2));break;
+                case BGEU:pc+=(sext(imm,12)-4)*(reg->getdata(rs1)>=reg->getdata(rs2));break;
                 //load instructions begin   //I type
                 case LB: 
                 case LH: 
@@ -60,15 +60,15 @@ class Execute
                 case LHU:
                 case SB:    //S type
                 case SH:
-                case SW:addr=reg->getdata(rs1)+sext(imm,12);break;
+                case SW:addr=reg->getdata(rs1)+sext(imm,11);break;
                 //arithmetic and logic instructions begin
                 //I type
-                case ADDI:temp_result=reg->getdata(rs1)+sext(imm,12);break;
-                case SLTI:temp_result=((int)reg->getdata(rs1)<(int)sext(imm,12));break;
-                case SLTIU:temp_result=(reg->getdata(rs1)<sext(imm,12));break;
-                case XORI:temp_result=reg->getdata(rs1)^sext(imm,12);break;
-                case ORI:temp_result=reg->getdata(rs1)|sext(imm,12);break;
-                case ANDI:temp_result=reg->getdata(rs1)&sext(imm,12);break;
+                case ADDI:temp_result=reg->getdata(rs1)+sext(imm,11);break;
+                case SLTI:temp_result=((int)reg->getdata(rs1)<(int)sext(imm,11));break;
+                case SLTIU:temp_result=(reg->getdata(rs1)<sext(imm,11));break;
+                case XORI:temp_result=reg->getdata(rs1)^sext(imm,11);break;
+                case ORI:temp_result=reg->getdata(rs1)|sext(imm,11);break;
+                case ANDI:temp_result=reg->getdata(rs1)&sext(imm,11);break;
                 case SLLI:temp_result=reg->getdata(rs1)<<shamt;break;    
                 case SRLI:temp_result=reg->getdata(rs1)>>shamt;break;
                 case SRAI:temp_result=(reg->getdata(rs1)>>shamt)|(reg->getdata(rs1)>>31<<31);break;
@@ -92,8 +92,8 @@ class Execute
             {
                 //load and store instructions begin   
                 //I type
-                case LB:temp_result=sext(mem->load(addr,1),8);break;
-                case LH:temp_result=sext(mem->load(addr,2),16);break;
+                case LB:temp_result=sext(mem->load(addr,1),7);break;
+                case LH:temp_result=sext(mem->load(addr,2),15);break;
                 case LW:temp_result=mem->load(addr,4);break;
                 case LBU:temp_result=mem->load(addr,1);break;
                 case LHU:temp_result=mem->load(addr,2);break;

@@ -17,13 +17,22 @@ class Register
         {
             return data[pos];
         }
-        unsigned setdata(unsigned pos,unsigned val)
+        void setdata(unsigned pos,unsigned val)
         {
             if (pos==0) return;     //avoid modify reg[0]
             data[pos]=val;
         }
-        unsigned &getpc() {return pc;}
-        void nextpc() {pc+=4;}
-        unsigned output() {return data[10]&255;}     //end
+        unsigned &getpc() 
+        {
+            return pc;
+        }
+        void nextpc()
+        {
+            pc+=4;
+        }
+        unsigned output()  //end
+        {
+            return data[10]&255;
+        }    
 };
 #endif
