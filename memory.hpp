@@ -29,15 +29,15 @@ class Memory
     public:
         Memory()
         {
-            freopen("in","r",stdin);
             cnt=0;
+            freopen("in","r",stdin);
             std::memset(data,0,sizeof(data));
             std::memset(seq,0,sizeof(seq));
         }
         Memory(const char *fname)
         {
-            freopen(fname,"r",stdin);
             cnt=0;
+            freopen(fname,"r",stdin);
             std::memset(data,0,sizeof(data));
             std::memset(seq,0,sizeof(seq));
         }

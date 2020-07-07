@@ -13,7 +13,7 @@ class Execute
         Register *reg;
         Memory *mem;
         unsigned addr;
-        unsigned temp_result;
+        unsigned temp_result,temp_resultpc;
         unsigned sext(unsigned x,int n) //sign-extend
         {
             return (x>>n)&1?x|0xffffffff>>n<<n:x;
@@ -23,35 +23,34 @@ class Execute
         Execute(Instruction *_opt,Register *_reg,Memory *_mem):reg(_reg),opt(_opt),mem(_mem) {}
         void run()
         {
-            unsigned &pc=reg->getpc();
             unsigned shamt=opt->rs2,imm=opt->imm;
             unsigned rs1=opt->rs1,rs2=opt->rs2;
             if (opt->seq==0x00c68223) opt->isend=1;
             switch (opt->type)
             {
                 case LUI:temp_result=imm;break;
-                case AUIPC:temp_result=pc+imm;break;
+                case AUIPC:temp_result=reg->getpc()+imm;break;
                 //control instructions begin
                 //jump
                 case JAL:   //J type
                 {
-                    temp_result=pc;
-                    pc+=sext(imm,20)-4;
+                    temp_result=reg->getpc();
+                    temp_resultpc=sext(imm,20)-4;
                     break;
                 }
                 case JALR:  //I type
                 {
-                    temp_result=pc;
-                    pc=setlow0(reg->getdata(rs1)+sext(imm,11));
+                    temp_result=reg->getpc();
+                    temp_resultpc=setlow0(reg->getdata(rs1)+sext(imm,11));
                     break;
                 }
                 //branch    //B type
-                case BEQ:pc+=(sext(imm,12)-4)*(reg->getdata(rs1)==reg->getdata(rs2));break;
-                case BNE:pc+=(sext(imm,12)-4)*(reg->getdata(rs1)!=reg->getdata(rs2));break;
-                case BLT:pc+=(sext(imm,12)-4)*((int)reg->getdata(rs1)<(int)reg->getdata(rs2));break;
-                case BGE:pc+=(sext(imm,12)-4)*((int)reg->getdata(rs1)>=(int)reg->getdata(rs2));break;
-                case BLTU:pc+=(sext(imm,12)-4)*(reg->getdata(rs1)<reg->getdata(rs2));break;
-                case BGEU:pc+=(sext(imm,12)-4)*(reg->getdata(rs1)>=reg->getdata(rs2));break;
+                case BEQ:temp_resultpc=(sext(imm,12)-4)*(reg->getdata(rs1)==reg->getdata(rs2));break;
+                case BNE:temp_resultpc=(sext(imm,12)-4)*(reg->getdata(rs1)!=reg->getdata(rs2));break;
+                case BLT:temp_resultpc=(sext(imm,12)-4)*((int)reg->getdata(rs1)<(int)reg->getdata(rs2));break;
+                case BGE:temp_resultpc=(sext(imm,12)-4)*((int)reg->getdata(rs1)>=(int)reg->getdata(rs2));break;
+                case BLTU:temp_resultpc=(sext(imm,12)-4)*(reg->getdata(rs1)<reg->getdata(rs2));break;
+                case BGEU:temp_resultpc=(sext(imm,12)-4)*(reg->getdata(rs1)>=reg->getdata(rs2));break;
                 //load instructions begin   //I type
                 case LB: 
                 case LH: 
@@ -108,23 +107,27 @@ class Execute
             unsigned rd=opt->rd;
             switch (opt->type)
             {
-                case LUI:
-                case AUIPC:
-                // reg->getdata(rd]=temp_result;break;
                 //control instructions begin
                 //jump
                 case JAL:   //J type
-                // {
-                    // reg->getdata(rd]=pc+4;
-                    // pc+=sext(imm,21);
-                    // break;
-                // }
+                {
+                    reg->setdata(rd,temp_result);
+                    reg->getpc()+=temp_resultpc;
+                    break;
+                }
                 case JALR:  //I type
-                // {
-                //     reg->getdata(rd]=pc+4;
-                //     pc=setlow0(reg->getdata(rs1]+sext(imm,12));
-                //     break;
-                // }
+                {
+                    reg->setdata(rd,temp_result);
+                    reg->getpc()=temp_resultpc;
+                    break;
+                }
+                //branch    //B type
+                case BEQ:;
+                case BNE:
+                case BLT:
+                case BGE:
+                case BLTU:
+                case BGEU:reg->getpc()+=temp_resultpc;break;  
                 //load and store instructions begin   
                 //I type
                 case LB: 
@@ -133,6 +136,9 @@ class Execute
                 case LBU: 
                 case LHU:
                 //arithmetic and logic instructions begin
+                //U type
+                case LUI:
+                case AUIPC:   
                 //I type
                 case ADDI:
                 case SLTI:

@@ -10,8 +10,8 @@ class Register
     public:
         Register()
         {
-            std::memset(data,0,sizeof(data));
             pc=0;
+            std::memset(data,0,sizeof(data));
         }
         unsigned getdata(unsigned pos)
         {
