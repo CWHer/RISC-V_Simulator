@@ -1,6 +1,7 @@
 #include<cstdio>
 #include"RISC-V.h"
-
+#include"memory.hpp"
+#include"register.hpp"
 
 #ifndef _INSTRUCTION_
 #define _INSTRUCTION_
@@ -15,31 +16,22 @@ class Instruction
         unsigned imm;
         Basictypes basictype;
         Instructiontypes type;
-        char get()
-        {
-            char ch=getchar();
-            while (!(ch>='0'&&ch<='9')&&!(ch>='A'&&ch<='F')) ch=getchar();
-            return ch;
-        }
-        unsigned char2int(char ch)
-        {
-            return ch>='A'?ch-'A'+10:ch-'0';
-        }
     public:
-        Instruction(unsigned _seq=0):seq(_seq)
+        Instruction()
         {
-            _seq=imm=0;
+            imm=seq=0;
             rs1=rs2=rd=0;
             opcode=func3=func7=0;
         }
-        void read()
+        // void init()
+        // {
+        //     imm=seq=0;
+        //     rs1=rs2=rd=0;
+        //     opcode=func3=func7=0;
+        // }
+        void fetch(Memory *mem,Register *reg)
         {
-            for(int i=0;i<4;++i)
-            {
-                seq+=char2int(get())*(1<<(i*8+4));
-                seq+=char2int(get())*(1<<(i*8));
-            }
-                
+            seq=mem->fetch(reg->getpc());
         }
         void decode()
         {

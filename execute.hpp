@@ -86,7 +86,14 @@ class Execute
                 case OR:reg->data[rd]=reg->data[rs1]|reg->data[rs2];break;
                 case AND:reg->data[rd]=reg->data[rs1]&reg->data[rs2];break;
             }
+        }
+        void activate()
+        {
 
+        } 
+        void write_back()
+        {
+            
         }
 };
 #endif

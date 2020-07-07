@@ -14,5 +14,6 @@ class Register
             std::memset(data,0,sizeof(data));
             pc=0;
         }
+        unsigned getpc() {return pc;}
 };
 #endif
