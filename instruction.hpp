@@ -7,7 +7,6 @@
 #define _INSTRUCTION_
 class Instruction
 {
-    friend class RISC_V;
     friend class Execute;
     private:
         unsigned seq;
@@ -31,7 +30,8 @@ class Instruction
         // }
         void fetch(Memory *mem,Register *reg)
         {
-            seq=mem->fetch(reg->getpc());
+            seq=mem->load(reg->getpc(),4);
+            reg->nextpc();
         }
         void decode()
         {
@@ -44,75 +44,75 @@ class Instruction
                 case 23:basictype=U,type=AUIPC;break;
                 case 111:basictype=J,type=JAL;break;
                 case 103:basictype=I,type=JALR;break;
-                case 99: 	
+                case 99:
                 {
                     switch (func3) 
                     {
-						case 0:type=BEQ;break;		
-						case 1:type=BNE;break; 		
-						case 4:type=BLT;break;		
-						case 5:type=BGE;break;		
-						case 6:type=BLTU;break;		
-						case 7:type=BGEU;break;		
-					}
+                        case 0:type=BEQ;break;
+                        case 1:type=BNE;break;
+                        case 4:type=BLT;break;
+                        case 5:type=BGE;break;
+                        case 6:type=BLTU;break;
+                        case 7:type=BGEU;break;
+                    }
                     basictype=B;
                     break;
-                }												
-				case 3:	
+                }
+                case 3:	
                 {
                     switch (func3) 
                     {
-						case 0:type=LB;break;			
-						case 1:type=LH;break;		
-						case 2:type=LW;break;		
-						case 4:type=LBU;break;	
-						case 5:type=LHU;break;		
-					}
+                        case 0:type=LB;break;
+                        case 1:type=LH;break;
+                        case 2:type=LW;break;
+                        case 4:type=LBU;break;
+                        case 5:type=LHU;break;
+                    }
                     basictype=I;
                     break;
-                }												
-				case 35:	
-                {							
-					switch (func3) 
+                }
+                case 35:
+                {
+                    switch (func3) 
                     {
-						case 0:type=SB;break;			
-						case 1:type=SH;break;			
-						case 2:type=SW;break;			
-					}
+                        case 0:type=SB;break;
+                        case 1:type=SH;break;
+                        case 2:type=SW;break;
+                    }
                     basictype=S;
-					break;
+                    break;
                 }
-				case 19:
+                case 19:
                 {
-					switch (func3) 
+                    switch (func3) 
                     {
-						case 0:type=ADDI;break;	
-						case 1:type=SLLI;break;	
-						case 2:type=SLTI;break;		
-						case 3:type=SLTIU;break;	
-						case 4:type=XORI;break;
-						case 5:type=func7?SRAI:SRLI;break;
-						case 6:type=ORI;break;		
-						case 7:type=ANDI;break;	
-					}
+                        case 0:type=ADDI;break;
+                        case 1:type=SLLI;break;
+                        case 2:type=SLTI;break;
+                        case 3:type=SLTIU;break;
+                        case 4:type=XORI;break;
+                        case 5:type=func7?SRAI:SRLI;break;
+                        case 6:type=ORI;break;
+                        case 7:type=ANDI;break;
+                    }
                     basictype=I;
-					break;
+                    break;
                 }
-				case 51:
+                case 51:
                 {
-                	switch(func3) 
+                    switch(func3) 
                     {
-						case 0:type=func7?SUB:ADD;break;
-						case 1:type=SLL;break;		
-						case 2:type=SLT;break;		
-						case 3:type=SLTU;break;		
-						case 4:type=XOR;break;		
-						case 5:type=func7?SRA:SRL;									
-						case 6:type=OR;break;			
-						case 7:type=AND;break;		
-					}
+                        case 0:type=func7?SUB:ADD;break;
+                        case 1:type=SLL;break;
+                        case 2:type=SLT;break;
+                        case 3:type=SLTU;break;
+                        case 4:type=XOR;break;
+                        case 5:type=func7?SRA:SRL;
+                        case 6:type=OR;break;
+                        case 7:type=AND;break;
+                    }
                     basictype=R;
-					break;
+                    break;
                 }
             }
             rs1=(seq>>15)&31;

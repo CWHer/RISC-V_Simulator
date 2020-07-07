@@ -7,7 +7,6 @@
 
 class Memory
 {
-    friend class Execute;
     private:
         // static const int maxN=100;
         static const int maxN=1<<20;
@@ -42,6 +41,10 @@ class Memory
             std::memset(data,0,sizeof(data));
             std::memset(seq,0,sizeof(seq));
         }
+        ~Memory()
+        {
+            fclose(stdin);
+        }
         void init_read()
         {
             char ch=getchar();
@@ -49,7 +52,7 @@ class Memory
             {
                 if (ch=='@')
                 {
-                    for(int i=7;~i;--i) seq[i]=get();
+                    for(int i=0;i<8;++i) seq[i]=get();
                     cnt=seq2int(seq);
                 }
                 else
@@ -60,13 +63,17 @@ class Memory
                 ch=get();
             }
         }
-        unsigned fetch(unsigned pc)
+        void store(unsigned pos,unsigned val,unsigned sz)
         {
-            return data[pc]+(data[pc+1]<<8)+(data[pc+2]<<16)+(data[pc+3]<<24);
+            for(int i=0;i<sz;++i)
+                data[pos+i]=val&255,val>>=8;
         }
-        void set(unsigned pos,unsigned val)
+        unsigned load(unsigned pos,unsigned sz)
         {
-            data[pos]=val;
+            unsigned ret=0;
+            for(int i=sz-1;~i;--i)
+                ret=(ret<<8)+data[pos+i];
+            return ret;
         }
 };
 

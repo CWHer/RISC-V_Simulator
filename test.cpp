@@ -3,7 +3,7 @@
 #include"register.hpp"
 #include"memory.hpp"
 Register reg;
-Instruction t;
+Instruction opt;
 Memory mem;
 int main()
 {
@@ -11,7 +11,12 @@ int main()
     // freopen("in","r",stdin);
     while (1)
     {
-        mem.init_read();
+        opt.fetch(&mem,&reg);
+        opt.decode();
+        Execute exe(&opt,&reg,&mem);
+        exe.run();
+        exe.memory_access();
+        exe.write_back();
         // t.read();
         // t.decode();
         // Execute e(&t,&reg);

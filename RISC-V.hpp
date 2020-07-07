@@ -5,3 +5,9 @@ class RISC_V
     public:
         
 };
+
+//to do 
+    //reg[0] bug
+    //memory
+    //writeback
+    //pc:program counter
