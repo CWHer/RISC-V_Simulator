@@ -10,23 +10,36 @@ class RISC_V
         Register reg;
         Instruction opt;
         Memory *mem;
-        //debug
-        int cnt;
-    public:
-        RISC_V(Memory *_mem):cnt(0),mem(_mem) {}
-        void run()
+        int mode;
+        void run_parallel()
+        {
+            
+        }
+        void run_serial()
         {
             mem->init_read();
-            while (!opt.empty())
+            opt.fetch(mem,&reg);
+            while (!opt.isEnd())
             {
-                ++cnt;
-                opt.fetch(mem,&reg);
+                ++cnt; 
                 opt.decode();
                 Execute exe(&opt,&reg,mem);
                 exe.run();
                 exe.memory_access();
                 exe.write_back();
+                opt.fetch(mem,&reg);
             }
+        }
+        //debug
+        int cnt;
+    public:
+        RISC_V(Memory *_mem,int _mode=0):cnt(0),mem(_mem),mode(_mode) {}
+        void run()
+        {
+            if (mode==0)
+                run_serial();
+            else
+                run_parallel();
         }
         unsigned output()
         {

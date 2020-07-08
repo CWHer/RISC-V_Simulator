@@ -33,6 +33,7 @@ class Instruction
         void fetch(Memory *mem,Register *reg)
         {
             seq=mem->load(reg->getpc(),4);
+            if (seq==0x0ff00513) isend=1; 
             reg->nextpc();
         }
         void decode()
@@ -129,14 +130,14 @@ class Instruction
                 case J:imm=(seq>>21<<1&2047)+((seq>>20&1)<<11)+((seq>>12&255)<<12)+(seq>>31<<20);break;
             }
         }
-        bool empty()
+        bool isEnd()
         {
             return isend;
         }
-        //debug
-        // Instructiontypes gettype()
-        // {
-        //     return type;
-        // }
+        // debug
+        Instructiontypes gettype()
+        {
+            return type;
+        }
 };
 #endif

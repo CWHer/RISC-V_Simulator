@@ -7,15 +7,15 @@
 Register reg;
 Instruction opt;
 Memory mem;
-const char *str[]=
-    {
-        "LUI","AUIPC","JAL","JALR",
-        "BEQ","BNE","BLT","BGE","BLTU","BGEU",
-        "LB","LH","LW","LBU","LHU","SB","SH","SW",
-        "ADDI","SLTI","SLTIU","XORI","ORI","ANDI",
-        "SLLI","SRLI","SRAI",
-        "ADD","SUB","SLL","SLT","SLTU","XOR","SRL","SRA","OR","AND"
-    };
+// const char *str[]=
+//     {
+//         "LUI","AUIPC","JAL","JALR",
+//         "BEQ","BNE","BLT","BGE","BLTU","BGEU",
+//         "LB","LH","LW","LBU","LHU","SB","SH","SW",
+//         "ADDI","SLTI","SLTIU","XORI","ORI","ANDI",
+//         "SLLI","SRLI","SRAI",
+//         "ADD","SUB","SLL","SLT","SLTU","XOR","SRL","SRA","OR","AND"
+//     };
 unsigned sext(unsigned x,int n) //sign-extend: fill imm with (32-n)位置为立即数的最高位。
 {
     return (x>>n)&1?x|0xffffffff>>n<<n:x;
@@ -33,20 +33,23 @@ int main()
     // freopen("out","w",stdout);
     mem.init_read();
     // freopen("in","r",stdin);
-    while (!opt.empty())
+    opt.fetch(&mem,&reg);
+    while (!opt.isEnd())
     {
-        opt.fetch(&mem,&reg);
         opt.decode();
-        cnt++;
+        // cnt++;
         // std::cout<<++cnt<<' '<<str[opt.gettype()]<<std::endl;
+        // std::cout<<reg.output()<<std::endl;
         // if (cnt==31855)
         // {
             // puts("1");
         // }
+        // if (opt.empty()) break;
         Execute exe(&opt,&reg,&mem);
         exe.run();
         exe.memory_access();
         exe.write_back();
+        opt.fetch(&mem,&reg);
         // t.read();
         // t.decode();
         // Execute e(&t,&reg);

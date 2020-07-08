@@ -25,7 +25,6 @@ class Execute
         {
             unsigned shamt=opt->rs2,imm=opt->imm;
             unsigned rs1=opt->rs1,rs2=opt->rs2;
-            if (opt->seq==0x00c68223) opt->isend=1;
             switch (opt->type)
             {
                 case LUI:temp_result=imm;break;
