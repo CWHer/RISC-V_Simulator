@@ -23,23 +23,26 @@ int main()
     mem.init_read();
     IF.init(&mem,&reg);
     // freopen("in","r",stdin);
-    while (IF.run())
+    while (!WB.isEnd())
     {
-        // cnt++;
+        cnt++;
         // std::cout<<reg.output()<<std::endl;
         // if (cnt==31855)
         // {
             // puts("1");
         // }
+        IF.run();
         ID.init(IF);
         ID.run();
-        std::cout<<++cnt<<' '<<str[ID.gettype()]<<std::endl;
+        // std::cout<<++cnt<<' '<<str[ID.gettype()]<<std::endl;
+        // std::cout<<reg.getpc()<<std::endl;
         EXE.init(ID);
         EXE.run();
         MEM.init(EXE);
         MEM.run();
         WB.init(MEM);
         WB.run();
+        // reg.printdata();
     }
     std::cout<<cnt<<std::endl;
     std::cout<<reg.output()<<std::endl;

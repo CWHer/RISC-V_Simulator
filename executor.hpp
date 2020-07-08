@@ -24,11 +24,13 @@ class Executor
         void init(Instruction _opt)
         {
             opt=_opt;
+            temp_result=temp_resultpc=addr=0;
         }
         void run(Register *reg)
         {
             unsigned shamt=opt.rs2,imm=opt.imm;
             unsigned rs1=opt.rs1,rs2=opt.rs2;
+            temp_result=temp_resultpc=addr=0;
             switch (opt.type)
             {
                 case LUI:temp_result=imm;break;
@@ -165,6 +167,10 @@ class Executor
                 case OR:
                 case AND:reg->setdata(rd,temp_result);break;
             }
+        }
+        Instructiontypes gettype()
+        {
+            return opt.gettype();
         }
 };
 #endif

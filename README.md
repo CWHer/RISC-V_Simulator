@@ -9,6 +9,9 @@
 - [x] separate instructions executing section(pre)
 - [x] mem access(pre)
 - [x] writeback(pre)
+- [ ] MEM needs 3 clock
+- [ ] optimize
+- [ ] stall Branch inst later(than JAL&JALR)
 - [ ] 5-stage pipeline
 - [ ] Tomasulo
 - [ ] prediction&api
@@ -18,7 +21,7 @@
 
 ### 目前版本
 
-一个简易的串行版本
+Ver2.0
 
 - 基础类
 
@@ -41,7 +44,7 @@ graph TD;
 	D-->D3[write back];
 ```
 
-- 流水
+- 流水模块
 
 ```mermaid
 sequenceDiagram
@@ -60,7 +63,7 @@ Note over WB: exe.writeback
 
 > 串行简易版本
 >
-> 主要实现了reg,mem,inst,exe这3个类
+> 主要实现了reg,mem,inst,exe这4个类
 
 ### Ver 1.1
 
@@ -72,9 +75,28 @@ Note over WB: exe.writeback
 
 ### Ver 2.0
 
-并行版本
+> 简易并行版本，~~效率比较低，遇事不决直接stall~~
+>
+> feature：
+>
+> - 增加了wait_clk变量，用来lock模块（putwclk=add wait clk)
+>
+> - 增加了reset，用于初始化模块
+> - 非l&s inst直接传入WB，不经过MEM
+>
+> 某一个模块被lock时
+>
+> - 不会run，且每个周期wait_clk-1
+>
+> - 传出到下一个模块为空，且不会传入上一个模块的结果（对于Ver2.0情况，被lock时上一个模块应该一直为空）
+>
+> 会引发lock的情况
+>
+> - ID为control inst，e.g. JAL	结果：IF.reset()，IF.wait_clk=3，即pipeline暂停到cur inst执行完
+> - ID为l&s inst，e.g. SB	结果：IF.reset()，IF.wait_clk=5，即pipeline暂停到cur inst执行完
+>   - MEM为l&s inst	结果：MEM.wait_clk=2，模拟MEM需要3 clk
 
-~~刚刚开始动工~~
+
 
 
 

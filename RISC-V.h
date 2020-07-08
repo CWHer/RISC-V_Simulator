@@ -22,4 +22,36 @@ const char *str[]=
     "ADD","SUB","SLL","SLT","SLTU","XOR","SRL","SRA","OR","AND",
     "EMPTY"
 };
+int isJump(Instructiontypes type)
+{
+    int ret=0;
+    switch (type)
+    {
+        case BEQ:
+        case BNE:
+        case BLT:
+        case BGE:
+        case BLTU:
+        case BGEU:ret=1;break;
+        case JAL:
+        case JALR:ret=2;break;
+    }
+    return ret;
+}
+int isSL(Instructiontypes type)
+{
+    int ret=0;
+    switch (type)
+    {
+        case LB:
+        case LH:
+        case LW:
+        case LBU:
+        case LHU:ret=1;break;
+        case SB:
+        case SH:
+        case SW:ret=2;break;
+    }
+    return ret;
+}
 #endif

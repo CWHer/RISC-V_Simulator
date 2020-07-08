@@ -23,17 +23,19 @@ class Instruction
             opcode=func3=func7=0;
             type=EMPTY;
         }
-        // void init()
-        // {
-        //     imm=seq=0;
-        //     rs1=rs2=rd=0;
-        //     opcode=func3=func7=0;
-        // }
+        void init()
+        {
+            imm=seq=0;
+            rs1=rs2=rd=0;
+            opcode=func3=func7=0;
+            type=EMPTY;
+        }
         bool fetch(Memory *mem,Register *reg)
         {
+            init();
             seq=mem->load(reg->getpc(),4);
             reg->nextpc();
-            return seq!=0x0ff00513; 
+            return seq==0x0ff00513; 
         }
         void decode()
         {

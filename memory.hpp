@@ -63,12 +63,12 @@ class Memory
                 ch=get();
             }
         }
-        void store(unsigned pos,unsigned val,unsigned sz)
+        void store(unsigned pos,unsigned val,int sz)
         {
             for(int i=0;i<sz;++i)
                 data[pos+i]=val&255,val>>=8;
         }
-        unsigned load(unsigned pos,unsigned sz)
+        unsigned load(unsigned pos,int sz)
         {
             unsigned ret=0;
             for(int i=sz-1;~i;--i)

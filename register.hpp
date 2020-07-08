@@ -1,4 +1,6 @@
 #include<cstring>
+// debug
+#include<cstdio>
 
 #ifndef _REGISTER_
 #define _REGISTER_
@@ -30,9 +32,20 @@ class Register
         {
             pc+=4;
         }
+        void prevpc()
+        {
+            pc-=4;
+        }
         unsigned output()  //end
         {
             return data[10]&255;
         }    
+        //debug
+        void printdata()
+        {
+            for(int i=0;i<32;++i)  
+                printf("%u ",data[i]);
+            putchar('\n');
+        }
 };
 #endif
