@@ -9,10 +9,10 @@
 - [x] separate instructions executing section(pre)
 - [x] mem access(pre)
 - [x] writeback(pre)
-- [ ] MEM needs 3 clock
+- [x] MEM needs 3 clock
+- [x] 5-stage pipeline
 - [ ] optimize
 - [ ] stall Branch inst later(than JAL&JALR)
-- [ ] 5-stage pipeline
 - [ ] Tomasulo
 - [ ] prediction&api
 - [ ] various hazards
@@ -21,7 +21,7 @@
 
 ### 目前版本
 
-Ver2.0
+Ver2.0：简易并行版本，~~效率比较低，遇事不决直接stall~~
 
 - 基础类
 
@@ -93,8 +93,8 @@ Note over WB: exe.writeback
 > 会引发lock的情况
 >
 > - ID为control inst，e.g. JAL	结果：IF.reset()，IF.wait_clk=3，即pipeline暂停到cur inst执行完
-> - ID为l&s inst，e.g. SB	结果：IF.reset()，IF.wait_clk=5，即pipeline暂停到cur inst执行完
->   - MEM为l&s inst	结果：MEM.wait_clk=2，模拟MEM需要3 clk
+> - ID为l&s inst，e.g. SB	结果：IF.reset()，IF.wait_clk=6，即pipeline暂停到cur inst执行完
+>   - MEM为l&s inst	结果：MEM.wait_clk=3，模拟MEM需要3 clk
 
 
 
