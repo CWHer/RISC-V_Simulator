@@ -1,7 +1,7 @@
 #include"RISC-V.hpp"
 #include"memory.hpp"
 #include<iostream>
-Memory mem("in");
+Memory mem;
 RISC_V unit(&mem);
 int main()
 {

@@ -7,7 +7,7 @@
 #define _INSTRUCTION_
 class Instruction
 {
-    friend class Execute;
+    friend class Executor;
     private:
         unsigned seq;
         unsigned opcode,func3,func7;
@@ -15,14 +15,13 @@ class Instruction
         unsigned imm;
         Basictypes basictype;
         Instructiontypes type;
-        bool isend;
     public:
         Instruction()
         {
-            isend=0;
             imm=seq=0;
             rs1=rs2=rd=0;
             opcode=func3=func7=0;
+            type=EMPTY;
         }
         // void init()
         // {
@@ -30,11 +29,11 @@ class Instruction
         //     rs1=rs2=rd=0;
         //     opcode=func3=func7=0;
         // }
-        void fetch(Memory *mem,Register *reg)
+        bool fetch(Memory *mem,Register *reg)
         {
             seq=mem->load(reg->getpc(),4);
-            if (seq==0x0ff00513) isend=1; 
             reg->nextpc();
+            return seq!=0x0ff00513; 
         }
         void decode()
         {
@@ -129,10 +128,6 @@ class Instruction
                 case U:imm=seq>>12<<12;break;
                 case J:imm=(seq>>21<<1&2047)+((seq>>20&1)<<11)+((seq>>12&255)<<12)+(seq>>31<<20);break;
             }
-        }
-        bool isEnd()
-        {
-            return isend;
         }
         // debug
         Instructiontypes gettype()

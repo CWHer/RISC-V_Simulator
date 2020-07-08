@@ -1,33 +1,46 @@
 #include"RISC-V.h"
-#include"instruction.hpp"
-#include"execute.hpp"
 #include"register.hpp"
 #include"memory.hpp"
+#include"instructionfetch.hpp"
+#include"instructiondecode.hpp"
+#include"execute.hpp"
+#include"memoryaccess.hpp"
+#include"writeback.hpp"
 
 class RISC_V
 {
     private:
         Register reg;
-        Instruction opt;
         Memory *mem;
+        InstructionFetch IF;
+        InstructionDecode ID;
+        Execute EXE;
+        MemoryAccess MEM;
+        WriteBack WB;
         int mode;
         void run_parallel()
         {
-            
+            // exe.write_back();
+            // exe.memory_access();
+            // exe.run();
+            // opt.decode();
+            // opt.fetch();
         }
         void run_serial()
         {
             mem->init_read();
-            opt.fetch(mem,&reg);
-            while (!opt.isEnd())
+            IF.init(mem,&reg);
+            while (IF.run())
             {
-                ++cnt; 
-                opt.decode();
-                Execute exe(&opt,&reg,mem);
-                exe.run();
-                exe.memory_access();
-                exe.write_back();
-                opt.fetch(mem,&reg);
+                ++cnt;
+                ID.init(IF);
+                ID.run();
+                EXE.init(ID);
+                EXE.run();
+                MEM.init(EXE);
+                MEM.run();
+                WB.init(MEM);
+                WB.run();
             }
         }
         //debug

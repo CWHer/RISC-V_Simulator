@@ -8,7 +8,8 @@ enum Instructiontypes
     LB,LH,LW,LBU,LHU,SB,SH,SW,
     ADDI,SLTI,SLTIU,XORI,ORI,ANDI,
     SLLI,SRLI,SRAI,
-    ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND
+    ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND,
+    EMPTY
 };
 //debug
 const char *str[]=
@@ -18,6 +19,7 @@ const char *str[]=
     "LB","LH","LW","LBU","LHU","SB","SH","SW",
     "ADDI","SLTI","SLTIU","XORI","ORI","ANDI",
     "SLLI","SRLI","SRAI",
-    "ADD","SUB","SLL","SLT","SLTU","XOR","SRL","SRA","OR","AND"
+    "ADD","SUB","SLL","SLT","SLTU","XOR","SRL","SRA","OR","AND",
+    "EMPTY"
 };
 #endif
