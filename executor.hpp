@@ -4,8 +4,8 @@
 #include"memory.hpp"
 
 
-#ifndef _EXECUTOR_
-#define _EXECUTOR_
+#ifndef __EXECUTOR__
+#define __EXECUTOR__
 class Executor
 {
     private:

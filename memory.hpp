@@ -2,8 +2,8 @@
 #include<iostream>
 #include<cstring>
 
-#ifndef _MEMORY_
-#define _MEMORY_
+#ifndef __MEMORY__
+#define __MEMORY__
 
 class Memory
 {

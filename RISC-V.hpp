@@ -57,16 +57,16 @@ class RISC_V        //mode  0(default):serial   1:parallel
             mem->init_read();
             IF.init(mem,&reg);
             do {
-                ++cnt;
-                IF.run();
+                IF.run(),++cnt;
                 ID.init(IF);
-                ID.run();
+                ID.run(),++cnt;
                 EXE.init(ID);
                 EXE.run();
+                if (isSL(EXE.gettype())) cnt+=3;
                 MEM.init(EXE);
-                MEM.run();
+                MEM.run(),++cnt;
                 WB.init(MEM);
-                WB.run();
+                WB.run(),++cnt;
             } while (!WB.isEnd());
         }
         //debug
@@ -85,7 +85,7 @@ class RISC_V        //mode  0(default):serial   1:parallel
             return reg.output();
         }
         //debug
-        int exetimes()
+        int clktimes()
         {
             return cnt;
         }

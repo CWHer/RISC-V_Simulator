@@ -4,8 +4,8 @@
 #include"executor.hpp"
 #include"instructiondecode.hpp"
 
-#ifndef _EXECUTE_
-#define _EXECUTE_
+#ifndef __EXECUTE__
+#define __EXECUTE__
 
 class Execute
 {

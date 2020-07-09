@@ -1,5 +1,5 @@
-#ifndef _RISC_V_
-#define _RISC_V_
+#ifndef __RISC_V__
+#define __RISC_V__
 enum Basictypes{R,I,S,B,U,J};
 enum Instructiontypes
 {

@@ -4,8 +4,8 @@
 #include"executor.hpp"
 #include"memoryaccess.hpp"
 
-#ifndef _WRITEBACK_
-#define _WRITEBACK_
+#ifndef __WRITEBACK__
+#define __WRITEBACK__
 
 class WriteBack
 {

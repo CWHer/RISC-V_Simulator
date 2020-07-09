@@ -1,4 +1,4 @@
-# RISC-V
+# RISC-V Simulator
 
 `to do`
 
@@ -6,16 +6,15 @@
 - [x] fix execute bug/how execute jal&jalr...
 - [x] fix program counter/when to execute next_pc?
 - [x] refactor EXE&MEM&WB
-- [x] separate instructions executing section(pre)
-- [x] mem access(pre)
-- [x] writeback(pre)
+- [x] separate instructions executing section
+- [x] mem access
+- [x] writeback
 - [x] MEM needs 3 clock
 - [x] 5-stage pipeline
-- [ ] optimize
-- [ ] stall Branch inst later(than JAL&JALR)
+- [ ] data hazard: forwarding
+- [ ] control hazard: prediction&api     stall Branch inst later(than JAL&JALR)
 - [ ] Tomasulo
-- [ ] prediction&api
-- [ ] various hazards
+- [ ] precise stop (?
 - [ ] a brief introduction about RISC-V in README
 - [ ] and so on……
 

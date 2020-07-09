@@ -4,8 +4,8 @@
 #include"executor.hpp"
 #include"execute.hpp"
 
-#ifndef _MEMORYACCESS_
-#define _MEMORYACCESS_
+#ifndef __MEMORYACCESS__
+#define __MEMORYACCESS__
 
 class MemoryAccess
 {

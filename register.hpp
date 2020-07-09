@@ -2,8 +2,8 @@
 // debug
 #include<cstdio>
 
-#ifndef _REGISTER_
-#define _REGISTER_
+#ifndef __REGISTER__
+#define __REGISTER__
 class Register
 {
     private:

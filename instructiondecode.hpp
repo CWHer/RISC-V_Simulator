@@ -3,8 +3,8 @@
 #include"register.hpp"
 #include"instructionfetch.hpp"
 
-#ifndef _INSTRUCTIONDECODE_
-#define _INSTRUCTIONDECODE_
+#ifndef __INSTRUCTIONDECODE__
+#define __INSTRUCTIONDECODE__
 
 class InstructionDecode
 {

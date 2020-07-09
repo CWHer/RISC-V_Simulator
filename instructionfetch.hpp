@@ -2,8 +2,8 @@
 #include"memory.hpp"
 #include"register.hpp"
 
-#ifndef _INSTRUCTIONFETCH_
-#define _INSTRUCTIONFETCH_
+#ifndef __INSTRUCTIONFETCH__
+#define __INSTRUCTIONFETCH__
 
 class InstructionFetch
 {

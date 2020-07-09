@@ -3,8 +3,8 @@
 #include"memory.hpp"
 #include"register.hpp"
 
-#ifndef _INSTRUCTION_
-#define _INSTRUCTION_
+#ifndef __INSTRUCTION__
+#define __INSTRUCTION__
 class Instruction
 {
     friend class Executor;
