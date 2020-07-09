@@ -20,6 +20,7 @@ int main()
 {
     // freopen("ans","w",stdout);
     // freopen("out","w",stdout);
+    bool MEM2WB;     //whether MEM->WB 
     mem.init_read();
     IF.init(&mem,&reg);
     int cnt=0;
@@ -34,20 +35,25 @@ int main()
         ++cnt;
         WB.run();
         MEM.run();
+        MEM2WB=MEM.gettype()!=EMPTY;
         WB.init(MEM);
         if (!MEM.isLock()&&MEM.gettype()!=EMPTY) MEM.forwarding(EXE);
         EXE.run();
         MEM.init(EXE);
-        if (EXE.gettype()!=EMPTY||EXE.isEnd())
+        if (EXE.gettype()!=EMPTY||EXE.isEnd())  
         {
-            if (!isSL(EXE.gettype()))
+            if (!isSL(EXE.gettype()))   //skip MEM if without SL
             {
-                WB.run();
-                WB.init(MEM);
-                MEM.reset();
+                if (MEM2WB)     //WAW
+                {
+                    EXE.putwclk(1);
+                    ID.putwclk(2);
+                    IF.putwclk(2);
+                }     
+                else WB.init(MEM);  
+                MEM.reset();    
             }
-            else
-                MEM.putwclk(3);
+            else MEM.putwclk(3);
         }
         // if (!EXE.gettype()==EMPTY&&!isSL(EXE.gettype())) //when pipeline is not stalled for MEM
         //     WB.init(MEM),MEM.reset();
@@ -78,10 +84,11 @@ int main()
         {
             IF.reset();
             IF.putwclk(3);  //3+1
+
             // if (ID.gettype()!=SB&&ID.gettype()!=SH&&ID.gettype()!=SW)
             //     IF.putwclk(3);
             // else  
-            //     IF.putwclk(3);
+            //     IF.putwclk(5);
 
             // IF.putwclk(6);
         }

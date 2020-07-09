@@ -13,6 +13,7 @@
 - [x] 5-stage pipeline
 - [x] data hazard: forwarding
 - [ ] control hazard: prediction&api     stall Branch inst later(than JAL&JALR)
+- [ ] optimize code runtime
 - [ ] Tomasulo
 - [ ] precise stop (?
 - [ ] a brief introduction about RISC-V in README
@@ -23,6 +24,8 @@
 Ver2.3：无分支预测的并行版本
 
 ~~cmake该怎么用/////~~
+
+~~现在跑得很慢，很慢....~~
 
 - 流程图
 
@@ -125,6 +128,22 @@ Note over WB: exe.writeback
 >
 > 当遇到这种情况时，暂停IF/ID/EXE至下一个clk
 
+### ~~Ver 2.4~~
+
+> 废弃的版本
+>
+> > 一个正常写的 .c 编译出来的东西，就不应该会出现这种情况啊
+>
+> 修复了s inst的一个bug
+>
+> bug会导致IF先于MEM
+>
+> 当遇到这种情况时，暂停IF至MEM完成
+>
+> ~~虽然测试数据里不存在这种bug~~
+>
+> ~~因为需要魔改代码，于是放弃了forwarding~~
+
 ### Ver 3.0
 
 > feature：
@@ -132,3 +151,7 @@ Note over WB: exe.writeback
 > - 分支预测
 >
 > ~~To be continued~~
+>
+> ~~现在代码跑得很慢，很慢...~~
+>
+> ~~代码性能问题暂时放一放~~
