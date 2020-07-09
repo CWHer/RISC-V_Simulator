@@ -42,8 +42,7 @@ class Execute
                 if (wait_clk) return;
             }
             if (isend) return;
-            exe.run(reg);
-            if (fwd.type!=EMPTY) exe.check(reg,fwd);
+            exe.run(reg,fwd);
         }
         void putwclk(int clk)  //put wait clk
         {

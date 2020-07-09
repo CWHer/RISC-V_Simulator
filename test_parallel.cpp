@@ -7,6 +7,7 @@
 #include"memoryaccess.hpp"
 #include"writeback.hpp"
 #include<iostream>
+#include<cstdio>
 Register reg;
 Memory mem;
 InstructionFetch IF;
@@ -17,7 +18,8 @@ WriteBack WB;
 
 int main()
 {
-
+    // freopen("ans","w",stdout);
+    // freopen("out","w",stdout);
     mem.init_read();
     IF.init(&mem,&reg);
     int cnt=0;
@@ -53,6 +55,11 @@ int main()
         //     MEM.putwclk(3);
         ID.run();
 
+        // if (ID.gettype()!=EMPTY)
+        // {
+        //     std::cout<<str[ID.gettype()]<<std::endl;
+        //     reg.printdata();
+        // }
         // std::cout<<str[ID.gettype()]<<std::endl;
         // reg.printdata();
 
@@ -71,6 +78,11 @@ int main()
         {
             IF.reset();
             IF.putwclk(3);  //3+1
+            // if (ID.gettype()!=SB&&ID.gettype()!=SH&&ID.gettype()!=SW)
+            //     IF.putwclk(3);
+            // else  
+            //     IF.putwclk(3);
+
             // IF.putwclk(6);
         }
         EXE.init(ID);

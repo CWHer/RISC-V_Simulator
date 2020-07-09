@@ -11,7 +11,7 @@
 - [x] writeback
 - [x] MEM needs 3 clock
 - [x] 5-stage pipeline
-- [ ] data hazard: forwarding
+- [x] data hazard: forwarding
 - [ ] control hazard: prediction&api     stall Branch inst later(than JAL&JALR)
 - [ ] Tomasulo
 - [ ] precise stop (?
@@ -109,4 +109,4 @@ Note over WB: exe.writeback
 >
 >   i.e. MEM结果提早返回给EXE
 >
->   IF.wait_clk=3
+>   ID为l&s inst，IF.wait_clk=3

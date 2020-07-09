@@ -22,6 +22,7 @@ class Instruction
             rs1=rs2=rd=0;
             opcode=func3=func7=0;
             type=EMPTY;
+            basictype=R;
         }
         void init()
         {
@@ -29,6 +30,7 @@ class Instruction
             rs1=rs2=rd=0;
             opcode=func3=func7=0;
             type=EMPTY;
+            basictype=R;
         }
         bool fetch(Memory *mem,Register *reg)
         {

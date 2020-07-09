@@ -27,12 +27,17 @@ class RISC_V        //mode  0(default):serial   1:parallel
                 WB.run();
                 MEM.run();
                 WB.init(MEM);
+                if (!MEM.isLock()&&MEM.gettype()!=EMPTY) MEM.forwarding(EXE);
                 EXE.run();
                 MEM.init(EXE);
                 if (EXE.gettype()!=EMPTY||EXE.isEnd())  
                 {
-                    if (!isSL(EXE.gettype()))   //ignore MEM if without SL
-                        WB.init(MEM),MEM.reset();
+                    if (!isSL(EXE.gettype()))   //skip MEM if without SL
+                    {
+                        WB.run();
+                        WB.init(MEM);
+                        MEM.reset();
+                    }
                     else
                         MEM.putwclk(3);
                 }
@@ -45,7 +50,7 @@ class RISC_V        //mode  0(default):serial   1:parallel
                 if (isSL(ID.gettype()))
                 {
                     IF.reset();
-                    IF.putwclk(4);  //3+1
+                    IF.putwclk(3);  //3+1 / 1 can forwarding
                 }
                 EXE.init(ID);
                 IF.run();

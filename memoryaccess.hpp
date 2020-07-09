@@ -49,6 +49,7 @@ class MemoryAccess
         void forwarding(Execute &EXE)
         {
             EXE.fwd=fwd;
+            fwd.init();
         }
         void putwclk(int clk)  //put wait clk
         {
