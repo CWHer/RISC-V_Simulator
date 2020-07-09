@@ -20,7 +20,7 @@
 
 ### 目前版本
 
-Ver2.0：简易并行版本，~~效率比较低，遇事不决直接stall~~
+Ver2.1：简易并行版本，~~效率比较低，遇事不决直接stall~~
 
 - 基础类
 
@@ -95,7 +95,18 @@ Note over WB: exe.writeback
 > - ID为l&s inst，e.g. SB	结果：IF.reset()，IF.wait_clk=6，即pipeline暂停到cur inst执行完
 >   - MEM为l&s inst	结果：MEM.wait_clk=3，模拟MEM需要3 clk
 
+### Ver 2.1
 
+> fix：
+>
+> - ID为l&s inst，只需IF.wait_clk=4，即cur inst完成WB后nxt inst刚好EXE
 
+### Ver 2.2
 
-
+> feature：
+>
+> - Forwarding 
+>
+>   i.e. MEM结果提早返回给EXE
+>
+>   IF.wait_clk=3

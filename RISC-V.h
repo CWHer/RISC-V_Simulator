@@ -11,7 +11,23 @@ enum Instructiontypes
     ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND,
     EMPTY
 };
-//debug
+struct forward
+{
+    Instructiontypes type;
+    unsigned rd,temp_result;
+    forward() 
+    {
+        type=EMPTY;
+        rd=temp_result=0;
+    }
+    forward(Instructiontypes _type,unsigned _rd,unsigned _temp_result)
+        :type(_type),rd(_rd),temp_result(_temp_result) {}
+    void init()
+    {
+        type=EMPTY;
+        rd=temp_result=0;
+    }
+};
 const char *str[]=
 {
     "LUI","AUIPC","JAL","JALR",

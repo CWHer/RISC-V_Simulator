@@ -18,11 +18,7 @@ class WriteBack
         void init(MemoryAccess &MEM)
         {
             reset();
-            if (MEM.isLock())
-            {
-                reset();
-                return;
-            }
+            if (MEM.isLock()) return;
             reg=MEM.reg;
             mem=MEM.mem;
             exe=MEM.exe;

@@ -45,7 +45,7 @@ class RISC_V        //mode  0(default):serial   1:parallel
                 if (isSL(ID.gettype()))
                 {
                     IF.reset();
-                    IF.putwclk(6);  //1+1+3+1
+                    IF.putwclk(4);  //3+1
                 }
                 EXE.init(ID);
                 IF.run();

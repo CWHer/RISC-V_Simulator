@@ -16,17 +16,14 @@ class Execute
         Executor exe;
         bool isend;
         int wait_clk;
+        forward fwd;
     public:
         Execute():wait_clk(0) {}
         void init(InstructionDecode &ID)
         {
             if (isLock()) return;
             reset();
-            if (ID.isLock())
-            {
-                reset();
-                return;
-            }
+            if (ID.isLock()) return;
             reg=ID.reg;
             mem=ID.mem;
             exe.init(ID.opt);
@@ -46,6 +43,7 @@ class Execute
             }
             if (isend) return;
             exe.run(reg);
+            if (fwd.type!=EMPTY) exe.check(reg,fwd);
         }
         void putwclk(int clk)  //put wait clk
         {

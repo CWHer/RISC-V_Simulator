@@ -21,11 +21,7 @@ class InstructionDecode
         {
             if (isLock()) return;
             reset();
-            if (IF.isLock())
-            {
-                reset();
-                return;
-            }
+            if (IF.isLock()) return;
             opt=IF.opt;
             reg=IF.reg;
             mem=IF.mem;

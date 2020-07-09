@@ -25,23 +25,26 @@ int main()
     // freopen("in","r",stdin);
     while (!WB.isEnd())
     {
-        cnt++;
         // std::cout<<reg.output()<<std::endl;
         // if (cnt==31855)
         // {
             // puts("1");
         // }
-        IF.run();
+        IF.run(),++cnt;
         ID.init(IF);
-        ID.run();
+        ID.run(),++cnt;
+
         // std::cout<<++cnt<<' '<<str[ID.gettype()]<<std::endl;
         // std::cout<<reg.getpc()<<std::endl;
+        
         EXE.init(ID);
         EXE.run();
+        if (isSL(EXE.gettype())) cnt+=3;
         MEM.init(EXE);
-        MEM.run();
+        MEM.run(),++cnt;
         WB.init(MEM);
-        WB.run();
+        WB.run(),++cnt;
+
         // reg.printdata();
     }
     std::cout<<cnt<<std::endl;

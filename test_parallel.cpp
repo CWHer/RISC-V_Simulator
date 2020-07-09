@@ -33,12 +33,17 @@ int main()
         WB.run();
         MEM.run();
         WB.init(MEM);
+        if (!MEM.isLock()&&MEM.gettype()!=EMPTY) MEM.forwarding(EXE);
         EXE.run();
         MEM.init(EXE);
         if (EXE.gettype()!=EMPTY||EXE.isEnd())
         {
             if (!isSL(EXE.gettype()))
-                WB.init(MEM),MEM.reset();
+            {
+                WB.run();
+                WB.init(MEM);
+                MEM.reset();
+            }
             else
                 MEM.putwclk(3);
         }
@@ -65,7 +70,7 @@ int main()
         if (isSL(ID.gettype()))
         {
             IF.reset();
-            IF.putwclk(6);  //1+1+3+1
+            IF.putwclk(3);  //3+1
             // IF.putwclk(6);
         }
         EXE.init(ID);
