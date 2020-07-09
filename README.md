@@ -20,7 +20,13 @@
 
 ### 目前版本
 
-Ver2.1：简易并行版本，~~效率比较低，遇事不决直接stall~~
+Ver2.3：无分支预测的并行版本
+
+~~cmake该怎么用/////~~
+
+- 流程图
+
+![](\img\proc.png)
 
 - 基础类
 
@@ -110,3 +116,19 @@ Note over WB: exe.writeback
 >   i.e. MEM结果提早返回给EXE
 >
 >   ID为l&s inst，IF.wait_clk=3
+
+### Ver 2.3
+
+> 修复一个WAW data hazard
+>
+> 由于非s&l不经过MEM，可能同时发生MEM->WB&EXE->WB
+>
+> 当遇到这种情况时，暂停IF/ID/EXE至下一个clk
+
+### Ver 3.0
+
+> feature：
+>
+> - 分支预测
+>
+> ~~To be continued~~

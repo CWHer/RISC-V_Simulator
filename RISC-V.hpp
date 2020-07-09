@@ -18,14 +18,21 @@ class RISC_V        //mode  0(default):serial   1:parallel
         MemoryAccess MEM;
         WriteBack WB;
         int mode;
+        void pushback()     //reset pipeline to last clk
+        {
+            reg.prevpc();
+
+        }
         void run_parallel()
         {
+            bool MEM2WB;     //whether MEM->WB 
             mem->init_read();
             IF.init(mem,&reg);
             do {
                 ++cnt;
                 WB.run();
                 MEM.run();
+                MEM2WB=MEM.gettype()!=EMPTY;
                 WB.init(MEM);
                 if (!MEM.isLock()&&MEM.gettype()!=EMPTY) MEM.forwarding(EXE);
                 EXE.run();
@@ -34,12 +41,16 @@ class RISC_V        //mode  0(default):serial   1:parallel
                 {
                     if (!isSL(EXE.gettype()))   //skip MEM if without SL
                     {
-                        WB.run();
-                        WB.init(MEM);
-                        MEM.reset();
+                        if (MEM2WB)     //WAW
+                        {
+                            EXE.putwclk(1);
+                            ID.putwclk(2);
+                            IF.putwclk(2);
+                        }     
+                        else WB.init(MEM);  
+                        MEM.reset();    
                     }
-                    else
-                        MEM.putwclk(3);
+                    else MEM.putwclk(3);
                 }
                 ID.run();
                 if (isJump(ID.gettype()))
