@@ -27,6 +27,12 @@ class InstructionDecode
             mem=IF.mem;
             isend=IF.isend;
         }
+        void putback(InstructionFetch &IF)
+        {
+            IF.reg=reg;
+            IF.mem=mem;
+            IF.opt=opt;
+        }
         void reset()    //reset to EMPTY
         {
             opt.init();
@@ -56,6 +62,14 @@ class InstructionDecode
         bool isLock()
         {
             return wait_clk>0;
+        }
+        bool willJump()
+        {
+            return opt.willJump();
+        }
+        void setJump()
+        {
+            opt.willJump()=1;
         }
 };
 

@@ -8,6 +8,7 @@
 #define __EXECUTOR__
 class Executor
 {
+    friend class Execute;
     private:
         Instruction opt;
         // Register *reg;

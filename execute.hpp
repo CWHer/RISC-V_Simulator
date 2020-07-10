@@ -29,6 +29,12 @@ class Execute
             exe.init(ID.opt);
             isend=ID.isend;
         }
+        void putback(InstructionDecode &ID)
+        {
+            ID.reg=reg;
+            ID.mem=mem;
+            ID.opt=exe.opt;
+        }
         void reset()    //reset to EMPTY
         {
             Instruction opt;
@@ -59,6 +65,11 @@ class Execute
         bool isLock()
         {
             return wait_clk>0;
+        }
+        bool check()
+        {
+            if (!exe.opt.willJump()&&exe.temp_resultpc!=0) return 0;
+            return 1;
         }
 };
 

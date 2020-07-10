@@ -15,7 +15,14 @@ InstructionDecode ID;
 Execute EXE;
 MemoryAccess MEM;
 WriteBack WB;
-
+void putback()     //reset pipeline to last clk
+{
+    reg.prevpc();
+    ID.putback(IF);
+    EXE.putback(ID);
+    EXE.reset();
+    ID.setJump();
+}
 int main()
 {
     // freopen("ans","w",stdout);
@@ -39,6 +46,7 @@ int main()
         WB.init(MEM);
         if (!MEM.isLock()&&MEM.gettype()!=EMPTY) MEM.forwarding(EXE);
         EXE.run();
+        if (!EXE.check()) putback();
         MEM.init(EXE);
         if (EXE.gettype()!=EMPTY||EXE.isEnd())  
         {
@@ -74,7 +82,8 @@ int main()
         //     IF.putback();
         //     IF.putwclk(5);
         // }
-        if (isJump(ID.gettype()))
+        // if (isJump(ID.gettype()))
+        if (ID.willJump())
         {
             IF.reset();
             IF.putwclk(3);  //1+1+1 without SL

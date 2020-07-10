@@ -13,6 +13,7 @@ class Instruction
         unsigned opcode,func3,func7;
         unsigned rs1,rs2,rd;
         unsigned imm;
+        bool willjump;
         Basictypes basictype;
         Instructiontypes type;
     public:
@@ -23,6 +24,7 @@ class Instruction
             opcode=func3=func7=0;
             type=EMPTY;
             basictype=R;
+            willjump=0;
         }
         void init()
         {
@@ -31,6 +33,7 @@ class Instruction
             opcode=func3=func7=0;
             type=EMPTY;
             basictype=R;
+            willjump=0;
         }
         bool fetch(Memory *mem,Register *reg)
         {
@@ -48,8 +51,8 @@ class Instruction
             {
                 case 55:basictype=U,type=LUI;break;
                 case 23:basictype=U,type=AUIPC;break;
-                case 111:basictype=J,type=JAL;break;
-                case 103:basictype=I,type=JALR;break;
+                case 111:basictype=J,type=JAL,willjump=1;break;
+                case 103:basictype=I,type=JALR,willjump=1;break;
                 case 99:
                 {
                     switch (func3) 
@@ -61,6 +64,9 @@ class Instruction
                         case 6:type=BLTU;break;
                         case 7:type=BGEU;break;
                     }
+                    // willjump=prediction
+                    // willjump=1;
+                    willjump|=0;
                     basictype=B;
                     break;
                 }
@@ -137,6 +143,10 @@ class Instruction
         Instructiontypes gettype()
         {
             return type;
+        }
+        bool &willJump()
+        {
+            return willjump;
         }
 };
 #endif
