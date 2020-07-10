@@ -1,9 +1,9 @@
+#ifndef __MEMORY__
+#define __MEMORY__
+
 #include<cstdio>
 #include<iostream>
 #include<cstring>
-
-#ifndef __MEMORY__
-#define __MEMORY__
 
 class Memory
 {

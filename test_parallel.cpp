@@ -1,5 +1,6 @@
 #include"register.hpp"
 #include"memory.hpp"
+#include"predictor.hpp"
 #include"RISC-V.h"
 #include"instructionfetch.hpp"
 #include"instructiondecode.hpp"
@@ -7,18 +8,20 @@
 #include"memoryaccess.hpp"
 #include"writeback.hpp"
 #include<iostream>
+#include<iomanip>
 #include<cstdio>
 Register reg;
 Memory mem;
+Predictor prd;
 InstructionFetch IF;
-InstructionDecode ID;
+InstructionDecode ID(&prd);
 Execute EXE;
 MemoryAccess MEM;
 WriteBack WB;
 void putback()     //reset pipeline to last clk
 {
     reg.prevpc();
-    ID.putback(IF);
+    // ID.putback(IF);
     EXE.putback(ID);
     EXE.reset();
     ID.setJump();
@@ -27,10 +30,10 @@ int main()
 {
     // freopen("ans","w",stdout);
     // freopen("out","w",stdout);
-    bool MEM2WB;     //whether MEM->WB 
+    bool MEM2WB,isPB;     //whether MEM->WB 
     mem.init_read();
     IF.init(&mem,&reg);
-    int cnt=0;
+    int cnt=0,wcnt=0;
     do {
         // std::cout<<++cnt<<' '<<str[ID.gettype()]<<std::endl;
         // std::cout<<reg.output()<<std::endl;
@@ -39,14 +42,15 @@ int main()
             // puts("1");
         // }
         // if (opt.empty()) break;
-        ++cnt;
+        ++cnt,isPB=0;
         WB.run();
         MEM.run();
         MEM2WB=MEM.gettype()!=EMPTY;
         WB.init(MEM);
         if (!MEM.isLock()&&MEM.gettype()!=EMPTY) MEM.forwarding(EXE);
         EXE.run();
-        if (!EXE.check()) putback();
+        if (!EXE.check(wcnt)) putback(),isPB=1;
+        EXE.update(&prd);
         MEM.init(EXE);
         if (EXE.gettype()!=EMPTY||EXE.isEnd())  
         {
@@ -67,7 +71,7 @@ int main()
         //     WB.init(MEM),MEM.reset();
         // else 
         //     MEM.putwclk(3);
-        ID.run();
+        if (!isPB) ID.run();
 
         // if (ID.gettype()!=EMPTY)
         // {
@@ -83,13 +87,13 @@ int main()
         //     IF.putwclk(5);
         // }
         // if (isJump(ID.gettype()))
-        if (ID.willJump())
-        {
-            IF.reset();
-            IF.putwclk(3);  //1+1+1 without SL
-            // IF.putwclk(6);
-        }
-        if (isSL(ID.gettype()))
+        // if (ID.willJump())
+        // {
+        //     IF.reset();
+        //     IF.putwclk(3);  //1+1+1 without SL
+        //     // IF.putwclk(6);
+        // }
+        if (ID.willJump()||isSL(ID.gettype()))
         {
             IF.reset();
             IF.putwclk(3);  //3+1
@@ -106,6 +110,8 @@ int main()
         // std::cout<<reg.getpc()<<std::endl;
         ID.init(IF);
     } while (!WB.isEnd());
+    std::cout<<prd.tot-wcnt<<'/'<<prd.tot<<' ';
+    std::cout<<std::setprecision(2)<<(double)(prd.tot-wcnt)/prd.tot<<std::endl;
     std::cout<<cnt<<std::endl;
     std::cout<<reg.output()<<std::endl;
     return 0;

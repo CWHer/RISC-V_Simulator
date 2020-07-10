@@ -12,7 +12,9 @@
 - [x] MEM needs 3 clock
 - [x] 5-stage pipeline
 - [x] data hazard: forwarding
-- [ ] control hazard: prediction&api     stall Branch inst later(than JAL&JALR)
+- [ ] EXE->IF forwarding
+- [x] control hazard: prediction&api   
+- [ ] optimize prediction
 - [ ] optimize code runtime
 - [ ] Tomasulo
 - [ ] precise stop (?
@@ -21,9 +23,7 @@
 
 ### 目前版本
 
-Ver2.3：无分支预测的并行版本
-
-~~cmake该怎么用/////~~
+Ver3.0：两位饱和计数器分支预测的并行版本
 
 ~~现在跑得很慢，很慢....~~
 
@@ -128,10 +128,8 @@ Note over WB: exe.writeback
 >
 > 当遇到这种情况时，暂停IF/ID/EXE至下一个clk
 
-### ~~Ver 2.4~~
+### ~~Ver 2.4~~废弃的版本
 
-> 废弃的版本
->
 > > 原话：一个正常写的 .c 编译出来的东西，就不应该会出现这种情况啊
 >
 > 修复了s inst的一个bug
@@ -149,6 +147,16 @@ Note over WB: exe.writeback
 > feature：
 >
 > - 分支预测
+>
+>   两位饱和计数器的分支预测
+>
+>   正确率在40%~70%，平均在55%，~~有时候还不如全部not jump~~
+
+### Ver 3.1
+
+> feature
+>
+> - 两级自适应预测器
 >
 > ~~To be continued~~
 >
