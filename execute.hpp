@@ -85,6 +85,7 @@ class Execute
             if (!isJump(type)) return;
             if (type==JAL||type==JALR) return;
             prd->update(exe.temp_resultpc!=0?-1:1);
+            prd->push(exe.temp_resultpc!=0);
         }
 };
 

@@ -49,7 +49,17 @@ int main()
         WB.init(MEM);
         if (!MEM.isLock()&&MEM.gettype()!=EMPTY) MEM.forwarding(EXE);
         EXE.run();
-        if (!EXE.check(wcnt)) putback(),isPB=1;
+        // if (!EXE.check(wcnt)) putback(),isPB=1;
+        if (!EXE.check(wcnt))    //put pipeline to last clk
+        {
+            reg.prevpc();
+            // ID.putback(IF);
+            EXE.putback(ID);
+            EXE.reset();
+            ID.setJump();
+            isPB=1;
+        }
+
         EXE.update(&prd);
         MEM.init(EXE);
         if (EXE.gettype()!=EMPTY||EXE.isEnd())  
