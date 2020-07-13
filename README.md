@@ -12,7 +12,7 @@
 - [x] MEM needs 3 clock
 - [x] 5-stage pipeline
 - [x] data hazard: forwarding
-- [ ] EXE->IF forwarding
+- [x] pc:EXE->IF forwarding
 - [x] control hazard: prediction&api   
 - [x] optimize prediction
 - [x] optimize code runtime (-O3 is enough)
@@ -23,9 +23,11 @@
 
 ### 目前版本
 
-**Ver3.1**
+**Ver3.3**
 
-~~其实代码不是很慢...~~
+大概是pipeline的最终版本了
+
+~~其实代码不是很慢，开了O3就很快的（确信）...~~
 
 - 流程图
 
@@ -208,8 +210,22 @@ Note over WB: exe.writeback
 > | tak       | 3366930   | 45910/60639       | 75.71% |
 > | pi        | 165445912 | 32783691/39956380 | 82.05% |
 
+### Ver3.3
 
-
-> ~~其实代码不是很慢...~~
+>feature
 >
-> ~~代码性能问题暂时放一放~~
+>- 对于B-type inst，增加了EXE->IF的forwarding
+>
+>**运行时间**
+>
+>|           | ver3.2    | ver3.3    | serial    |      |
+>| --------- | --------- | --------- | --------- | ---- |
+>| basicopt  | 821202    | 706597    | 2149669   | 3.04 |
+>| bulgarian | 714099    | 616228    | 1473057   | 2.39 |
+>| hanoi     | 335378    | 312804    | 725053    | 2.32 |
+>| magic     | 1035835   | 949556    | 2400584   | 2.53 |
+>| qsort     | 2543063   | 2182015   | 5404772   | 2.48 |
+>| queens    | 1027105   | 947307    | 2288274   | 2.42 |
+>| superloop | 679496    | 613556    | 2047635   | 3.34 |
+>| tak       | 3361545   | 3135134   | 7761183   | 2.48 |
+>| pi        | 164473580 | 135050693 | 407940973 | 3.02 |

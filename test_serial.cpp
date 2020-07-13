@@ -7,13 +7,14 @@
 #include"memoryaccess.hpp"
 #include"writeback.hpp"
 #include<iostream>
+Predictor prd;
 Register reg;
 Memory mem;
 InstructionFetch IF;
-InstructionDecode ID;
+InstructionDecode ID(&prd);
 Execute EXE;
 MemoryAccess MEM;
-WriteBack WB;
+WriteBack WB(0);
 int main()
 {
 
