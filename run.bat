@@ -26,25 +26,25 @@ copy testcases\bulgarian.data .\in
 echo bulgarian
 main.exe
 
-del in
-copy testcases\expr.data .\in
-echo expr
-main.exe
+REM del in
+REM copy testcases\expr.data .\in
+REM echo expr
+REM main.exe
 
-del in
-copy testcases\gcd.data .\in
-echo gcd
-main.exe
+REM del in
+REM copy testcases\gcd.data .\in
+REM echo gcd
+REM main.exe
 
 del in
 copy testcases\hanoi.data .\in
 echo hanoi
 main.exe
 
-del in
-copy testcases\heart.data .\in
-echo heart
-main.exe
+REM del in
+REM copy testcases\heart.data .\in
+REM echo heart
+REM main.exe
 
 REM del in
 REM copy testcases\lvalue2.data .\in
@@ -61,10 +61,10 @@ REM copy testcases\manyarguments.data .\in
 REM echo manyarguments
 REM main.exe
 
-del in
-copy testcases\multiarray.data .\in
-echo multiarray
-main.exe
+REM del in
+REM copy testcases\multiarray.data .\in
+REM echo multiarray
+REM main.exe
 
 REM del in
 REM copy testcases\naive.data .\in
@@ -81,10 +81,10 @@ copy testcases\queens.data .\in
 echo queens
 main.exe
 
-del in
-copy testcases\statement_test.data .\in
-echo statement_test
-main.exe
+REM del in
+REM copy testcases\statement_test.data .\in
+REM echo statement_test
+REM main.exe
 
 del in
 copy testcases\superloop.data .\in

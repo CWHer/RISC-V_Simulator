@@ -63,7 +63,7 @@ class Instruction
                         case 6:type=BLTU;break;
                         case 7:type=BGEU;break;
                     }
-                    willjump=prd->willJump();
+                    willjump=prd->willJump(type);
                     // willjump=1;
                     // willjump=0;
                     // printf("%d ",willjump);

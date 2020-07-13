@@ -79,13 +79,13 @@ class Execute
             // printf("%d\n",exe.temp_resultpc!=0);    //jump 1 njump 0
             return 1;
         }
-        void update(Predictor *prd)
+        void update(Predictor *prd)     //feedback predictor
         {
             Instructiontypes type=gettype();
             if (!isJump(type)) return;
             if (type==JAL||type==JALR) return;
-            prd->update(exe.temp_resultpc!=0?-1:1);
-            prd->push(exe.temp_resultpc!=0);
+            prd->update(exe.gettype(),exe.temp_resultpc!=0?-1:1);
+            prd->push(exe.gettype(),exe.temp_resultpc!=0);
         }
 };
 
