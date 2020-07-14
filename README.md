@@ -2,10 +2,14 @@
 
 **out-of-order execution** ~~OoO~~
 
+> 在指令issue之后就不存在顺序了
+
 `to do`
 
 - [ ] Tomasulo
-- [ ] a brief introduction about Tomasulo in README
+- [ ] ROB
+- [ ] precise stop api
+- [ ] a brief introduction about Tomasulo&ROB in README
 - [ ] and so on……
 
 ### 目前版本
@@ -17,6 +21,12 @@ Tomasulo:从入门到找不到门
 - 流程图
 
 ![](\img\proc1.png)
+
+- 流程图（with ROB）
+
+  顺序发射，乱序执行，顺序提交
+
+![](img/proc2.png)
 
 - 基础类
 
@@ -58,4 +68,3 @@ Note over WB: exe.writeback
 
 > 未完成
 >
-> 无控制指令的Tomasulo algorithm
