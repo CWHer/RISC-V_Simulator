@@ -15,9 +15,9 @@ class ReservationStation
         std::deque<Resnode> SLres,ALres;
     public:
         ReservationStation(Register *_reg):reg(_reg) {}
-        bool empty(Instructiontypes type)
+        bool full(Instructiontypes type)
         {   
-            return isSL(type)?SLres.size()<SLN:ALres.size()<ALN;
+            return isSL(type)?SLres.size()==SLN:ALres.size()==ALN;
         }
         void push(Instruction opt)
         {

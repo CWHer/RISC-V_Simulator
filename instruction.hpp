@@ -11,6 +11,7 @@ class Instruction
     friend class Executor;
     friend class ReservationStation;
     private:
+        static unsigned instcnt;    //initial with 0, in this file
         unsigned num;
         unsigned pc;
         unsigned seq;
@@ -21,13 +22,15 @@ class Instruction
     public:
         Instruction()
         {
+            num=pc=0;
             imm=seq=0;
             rs1=rs2=rd=0;
             type=EMPTY;
             basictype=R;
         }
-        void init()
+        void reset()
         {
+            num=pc=0;
             imm=seq=0;
             rs1=rs2=rd=0;
             type=EMPTY;
@@ -35,8 +38,10 @@ class Instruction
         }
         bool fetch(Memory *mem,Register *reg)
         {
-            init();
-            seq=mem->load(reg->getpc(),4);
+            reset();
+            num=++instcnt;
+            pc=reg->getpc();
+            seq=mem->load(pc,4);
             reg->nextpc();
             return seq==0x0ff00513; 
         }
@@ -140,4 +145,6 @@ class Instruction
             return type;
         }
 };
+Instruction::instcnt=0;
+
 #endif

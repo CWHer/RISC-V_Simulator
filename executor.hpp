@@ -19,6 +19,11 @@ class Executor
         //     opt=_opt;
         //     temp_result=temp_resultpc=addr=0;
         // }
+        void reset()
+        {
+            opt.reset();
+            temp_result=temp_resultpc=0;
+        }
         void run()   
         {                              
             unsigned shamt=opt.Vk,imm=opt.A;     

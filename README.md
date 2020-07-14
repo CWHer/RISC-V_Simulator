@@ -16,11 +16,11 @@
 
 Tomasulo:从入门到找不到门
 
-
+~~我是谁？我在哪？我在写什么？~~
 
 - 流程图
 
-![](\img\proc1.png)
+![](img/proc1.png)
 
 - 流程图（with ROB）
 
@@ -66,5 +66,8 @@ Note over WB: exe.writeback
 
 ### Ver 1.0
 
-> 未完成
+> idea
 >
+> - 执行器分为SLU、ALU，分别为3clk、1clk
+> - CDB用了priority_queue
+> - Res station&ROB用了deque

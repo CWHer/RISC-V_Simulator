@@ -36,6 +36,13 @@ struct Resnode
         Qj=Qk=NULL;
         Vj=Vk=A=isBusy=0;
     }
+    void reset()
+    {
+        rd=num=pc=0;
+        Op=EMPTY;
+        Qj=Qk=NULL;
+        Vj=Vk=A=isBusy=0;
+    }
 };
 const char *str[]=
 {
