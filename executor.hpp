@@ -8,61 +8,47 @@
 
 class Executor
 {
-    friend class Execute;
+    // friend class Execute;
+    friend class CommonDataBus;
     private:
-        Instruction opt;
-        // Register *reg;
-        // Memory *mem;
-        unsigned addr;
+        Resnode opt;
         unsigned temp_result,temp_resultpc;
-        unsigned sext(unsigned x,int n) //sign-extend
-        {
-            return (x>>n)&1?x|0xffffffff>>n<<n:x;
-        }     
-        unsigned setlow0(unsigned x) {return (x|1)^1;}
-        unsigned getdata(Register *reg,unsigned pos,forward &fwd)
-        {
-            if (fwd.type!=EMPTY&&pos==fwd.rd) return fwd.temp_result;
-            return reg->getdata(pos);
-        }
     public:
-        // Execute(Instruction *_opt,Register *_reg,Memory *_mem):reg(_reg),opt(_opt),mem(_mem) {}
-        void init(Instruction _opt)
-        {
-            opt=_opt;
-            temp_result=temp_resultpc=addr=0;
-        }
-        void run(Register *reg,forward &fwd)    //check forwarding in EXE, similar to run
+        // void init(Resnode _opt)
+        // {
+        //     opt=_opt;
+        //     temp_result=temp_resultpc=addr=0;
+        // }
+        void run()   
         {                              
-            unsigned shamt=opt.rs2,imm=opt.imm;     //check replace run in ver2.2
-            unsigned rs1=opt.rs1,rs2=opt.rs2;
-            temp_result=temp_resultpc=addr=0;
-            switch (opt.type)
+            unsigned shamt=opt.Vk,imm=opt.A;     
+            temp_result=temp_resultpc=0;
+            switch (opt.Op)
             {
                 case LUI:temp_result=imm;break;
-                case AUIPC:temp_result=reg->getpc()+imm;break;
+                case AUIPC:temp_result=opt.pc+imm;break;
                 //control instructions begin
                 //jump
                 case JAL:   //J type
                 {
-                    temp_result=reg->getpc();
-                    temp_resultpc=sext(imm,20)-4;
+                    temp_result=opt.pc+4;
+                    temp_resultpc=opt.pc+imm;
                     break;
                 }
                 case JALR:  //I type
                 {
-                    temp_result=reg->getpc();
-                    temp_resultpc=setlow0(getdata(reg,rs1,fwd)+sext(imm,11));
+                    temp_result=opt.pc+4;
+                    temp_resultpc=setlow0(opt.Vj+imm);
                     break;
                 }
                 //branch    //B type
-                case BEQ:temp_resultpc=(sext(imm,12)-4)*(getdata(reg,rs1,fwd)==getdata(reg,rs2,fwd));break;
-                case BNE:temp_resultpc=(sext(imm,12)-4)*(getdata(reg,rs1,fwd)!=getdata(reg,rs2,fwd));break;
-                case BLT:temp_resultpc=(sext(imm,12)-4)*((int)getdata(reg,rs1,fwd)<(int)getdata(reg,rs2,fwd));break;
-                case BGE:temp_resultpc=(sext(imm,12)-4)*((int)getdata(reg,rs1,fwd)>=(int)getdata(reg,rs2,fwd));break;
-                case BLTU:temp_resultpc=(sext(imm,12)-4)*(getdata(reg,rs1,fwd)<getdata(reg,rs2,fwd));break;
-                case BGEU:temp_resultpc=(sext(imm,12)-4)*(getdata(reg,rs1,fwd)>=getdata(reg,rs2,fwd));break;
-                //load instructions begin   //I type
+                case BEQ:temp_resultpc=opt.pc+imm*(opt.Vj==opt.Vk);break;
+                case BNE:temp_resultpc=opt.pc+imm*(opt.Vj!=opt.Vk);break;
+                case BLT:temp_resultpc=opt.pc+imm*((int)opt.Vj<(int)opt.Vk);break;
+                case BGE:temp_resultpc=opt.pc+imm*((int)opt.Vj>=(int)opt.Vk);break;
+                case BLTU:temp_resultpc=opt.pc+imm*(opt.Vj<opt.Vk);break;
+                case BGEU:temp_resultpc=opt.pc+imm*(opt.Vj>=opt.Vk);break;
+                //load&store instructions begin   //I type
                 case LB: 
                 case LH: 
                 case LW: 
@@ -70,67 +56,65 @@ class Executor
                 case LHU:
                 case SB:    //S type
                 case SH:
-                case SW:addr=getdata(reg,rs1,fwd)+sext(imm,11);break;
+                case SW:opt.A=opt.Vj+imm;break;
                 //arithmetic and logic instructions begin
                 //I type
-                case ADDI:temp_result=getdata(reg,rs1,fwd)+sext(imm,11);break;
-                case SLTI:temp_result=((int)getdata(reg,rs1,fwd)<(int)sext(imm,11));break;
-                case SLTIU:temp_result=(getdata(reg,rs1,fwd)<sext(imm,11));break;
-                case XORI:temp_result=getdata(reg,rs1,fwd)^sext(imm,11);break;
-                case ORI:temp_result=getdata(reg,rs1,fwd)|sext(imm,11);break;
-                case ANDI:temp_result=getdata(reg,rs1,fwd)&sext(imm,11);break;
-                case SLLI:temp_result=getdata(reg,rs1,fwd)<<shamt;break;    
-                case SRLI:temp_result=getdata(reg,rs1,fwd)>>shamt;break;
-                case SRAI:temp_result=(getdata(reg,rs1,fwd)>>shamt)|(getdata(reg,rs1,fwd)>>31<<31);break;
+                case ADDI:temp_result=opt.Vj+imm;break;
+                case SLTI:temp_result=((int)opt.Vj<(int)imm);break;
+                case SLTIU:temp_result=(opt.Vj<imm);break;
+                case XORI:temp_result=opt.Vj^imm;break;
+                case ORI:temp_result=opt.Vj|imm;break;
+                case ANDI:temp_result=opt.Vj&imm;break;
+                case SLLI:temp_result=opt.Vj<<shamt;break;    
+                case SRLI:temp_result=opt.Vj>>shamt;break;
+                case SRAI:temp_result=(opt.Vj>>shamt)|(opt.Vj>>31<<31);break;
                 //the original sign bit is copied into the vacated upper bits   ???
                 //B type
-                case ADD:temp_result=getdata(reg,rs1,fwd)+getdata(reg,rs2,fwd);break;
-                case SUB:temp_result=getdata(reg,rs1,fwd)-getdata(reg,rs2,fwd);break;
-                case SLL:temp_result=getdata(reg,rs1,fwd)<<getdata(reg,rs2,fwd);break;
-                case SLT:temp_result=((int)getdata(reg,rs1,fwd)<(int)getdata(reg,rs2,fwd));break;
-                case SLTU:temp_result=(getdata(reg,rs1,fwd)<getdata(reg,rs2,fwd));break;
-                case XOR:temp_result=getdata(reg,rs1,fwd)^getdata(reg,rs2,fwd);break;
-                case SRL:temp_result=getdata(reg,rs1,fwd)>>getdata(reg,rs2,fwd);break;
-                case SRA:temp_result=(getdata(reg,rs1,fwd)>>getdata(reg,rs2,fwd))|(getdata(reg,rs1,fwd)>>31<<31);break;
-                case OR:temp_result=getdata(reg,rs1,fwd)|getdata(reg,rs2,fwd);break;
-                case AND:temp_result=getdata(reg,rs1,fwd)&getdata(reg,rs2,fwd);break;
+                case ADD:temp_result=opt.Vj+opt.Vk;break;
+                case SUB:temp_result=opt.Vj-opt.Vk;break;
+                case SLL:temp_result=opt.Vj<<opt.Vk;break;
+                case SLT:temp_result=((int)opt.Vj<(int)opt.Vk);break;
+                case SLTU:temp_result=(opt.Vj<opt.Vk);break;
+                case XOR:temp_result=opt.Vj^opt.Vk;break;
+                case SRL:temp_result=opt.Vj>>opt.Vk;break;
+                case SRA:temp_result=(opt.Vj>>opt.Vk)|(opt.Vj>>31<<31);break;
+                case OR:temp_result=opt.Vj|opt.Vk;break;
+                case AND:temp_result=opt.Vj&opt.Vk;break;
             }
-            fwd.init();
         }
         void memory_access(Memory *mem,Register *reg)
         {
-            switch (opt.type)
+            switch (opt.Op)
             {
                 //load and store instructions begin   
                 //I type
-                case LB:temp_result=sext(mem->load(addr,1),7);break;
-                case LH:temp_result=sext(mem->load(addr,2),15);break;
-                case LW:temp_result=mem->load(addr,4);break;
-                case LBU:temp_result=mem->load(addr,1);break;
-                case LHU:temp_result=mem->load(addr,2);break;
+                case LB:temp_result=sext(mem->load(opt.A,1),7);break;
+                case LH:temp_result=sext(mem->load(opt.A,2),15);break;
+                case LW:temp_result=mem->load(opt.A,4);break;
+                case LBU:temp_result=mem->load(opt.A,1);break;
+                case LHU:temp_result=mem->load(opt.A,2);break;
                 //S type
-                case SB:mem->store(addr,reg->getdata(opt.rs2),1);break;
-                case SH:mem->store(addr,reg->getdata(opt.rs2),2);break;
-                case SW:mem->store(addr,reg->getdata(opt.rs2),4);break;
+                case SB:mem->store(opt.A,opt.Vk,1);break;
+                case SH:mem->store(opt.A,opt.Vk,2);break;
+                case SW:mem->store(opt.A,opt.Vk,4);break;
             }
         } 
-        void write_back(Register *reg,bool isParallel)
+        void write_back(Register *reg) const
         {
-            unsigned rd=opt.rd;
-            switch (opt.type)
+            switch (opt.Op)
             {
                 //control instructions begin
                 //jump
                 case JAL:   //J type
                 {
-                    reg->setdata(rd,temp_result);
-                    reg->getpc()+=temp_resultpc;
+                    reg->setdata(opt.rd,temp_result);
+                    reg->getpc()=temp_resultpc;    //!!! += --> = in OoOE
                     break;
                 }
                 case JALR:  //I type
                 {
-                    reg->setdata(rd,temp_result);
-                    reg->getpc()=temp_resultpc+(4*isParallel);   //nextpc in simultaneous IF(forwarding)
+                    reg->setdata(opt.rd,temp_result);
+                    reg->getpc()=temp_resultpc;   //nextpc in simultaneous IF(forwarding)
                     break;
                 }
                 //branch    //B type
@@ -139,7 +123,7 @@ class Executor
                 case BLT:
                 case BGE:
                 case BLTU:
-                case BGEU:reg->getpc()+=temp_resultpc;break;  
+                case BGEU:reg->getpc()=temp_resultpc;break;  //!!! += --> = in OoOE
                 //load and store instructions begin   
                 //I type
                 case LB: 
@@ -172,16 +156,12 @@ class Executor
                 case SRL:
                 case SRA:
                 case OR:
-                case AND:reg->setdata(rd,temp_result);break;
+                case AND:reg->setdata(opt.rd,temp_result);break;
             }
         }
         Instructiontypes gettype()
         {
-            return opt.gettype();
-        }
-        forward genfwd()
-        {
-            return forward(gettype(),opt.rd,temp_result,temp_resultpc);
+            return opt.Op;
         }
 };
 #endif

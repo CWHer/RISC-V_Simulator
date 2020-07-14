@@ -1,29 +1,37 @@
 #ifndef __REGISTER__
 #define __REGISTER__
 
-#include<cstring>
-// debug
-#include<cstdio>
+#include"RISC-V.h"
 
 class Register
 {
     private:
         unsigned data[32];
+        Resnode *Qi[32];
         unsigned pc;
     public:
         Register()
         {
             pc=0;
             std::memset(data,0,sizeof(data));
+            std::memset(Qi,0,sizeof(Qi));
         }
-        unsigned getdata(unsigned pos)
+        std::pair<unsigned,Resnode*> getdata(unsigned pos)
         {
-            return data[pos];
+            return std::pair<unsigned,Resnode*>(data[pos],Qi[pos]);  
         }
         void setdata(unsigned pos,unsigned val)
         {
             if (pos==0) return;     //avoid modify reg[0]
             data[pos]=val;
+        }
+        bool isemptyQi(unsigned pos)
+        {
+            return Qi[pos]==NULL;
+        }
+        void setQi(unsigned pos,Resnode *ptr)
+        {
+            Qi[pos]=ptr;
         }
         unsigned &getpc() 
         {

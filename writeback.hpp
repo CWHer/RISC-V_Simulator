@@ -1,49 +1,11 @@
 #ifndef __WRITEBACK__
-#define __WRITEBACK__
+#define __WIRTEBACK__
 
-#include"instruction.hpp"
-#include"memory.hpp"
-#include"register.hpp"
-#include"executor.hpp"
-#include"memoryaccess.hpp"
+#include"RISC-V.h"
 
 class WriteBack
 {
-    private:
-        Register *reg;
-        Memory *mem;
-        Executor exe;
-        bool isend;
-        bool isParallel;
-    public:
-        WriteBack(bool _isParallel):isParallel(_isParallel) {}
-        void init(MemoryAccess &MEM)
-        {
-            reset();
-            if (MEM.isLock()) return;
-            reg=MEM.reg;
-            mem=MEM.mem;
-            exe=MEM.exe;
-            isend=MEM.isend;
-        }
-        void reset()    //reset to EMPTY
-        {
-            Instruction opt;
-            exe.init(opt);
-        }
-        void run()
-        {
-            if (isend) return;
-            exe.write_back(reg,isParallel);
-        }
-        bool isEnd()
-        {
-            return isend;
-        }
-        Instructiontypes gettype()
-        {
-            return exe.gettype();
-        }
+
 };
 
 #endif

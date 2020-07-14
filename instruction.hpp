@@ -1,7 +1,6 @@
 #ifndef __INSTRUCTION__
 #define __INSTRUCTION__
 
-#include<cstdio>
 #include"RISC-V.h"
 #include"memory.hpp"
 #include"register.hpp"
@@ -10,11 +9,13 @@
 class Instruction
 {
     friend class Executor;
+    friend class ReservationStation;
     private:
+        unsigned num;
+        unsigned pc;
         unsigned seq;
         unsigned rs1,rs2,rd;
         unsigned imm;
-        bool willjump;
         Basictypes basictype;
         Instructiontypes type;
     public:
@@ -24,7 +25,6 @@ class Instruction
             rs1=rs2=rd=0;
             type=EMPTY;
             basictype=R;
-            willjump=0;
         }
         void init()
         {
@@ -32,14 +32,11 @@ class Instruction
             rs1=rs2=rd=0;
             type=EMPTY;
             basictype=R;
-            willjump=0;
         }
-        bool fetch(Memory *mem,Register *reg,forward fwd)
+        bool fetch(Memory *mem,Register *reg)
         {
             init();
-            unsigned pc=reg->getpc()+fwd.temp_resultpc;
-            if (fwd.type==JALR) pc=fwd.temp_resultpc;
-            seq=mem->load(pc,4);
+            seq=mem->load(reg->getpc(),4);
             reg->nextpc();
             return seq==0x0ff00513; 
         }
@@ -52,8 +49,8 @@ class Instruction
             {
                 case 55:basictype=U,type=LUI;break;
                 case 23:basictype=U,type=AUIPC;break;
-                case 111:basictype=J,type=JAL,willjump=1;break;
-                case 103:basictype=I,type=JALR,willjump=1;break;
+                case 111:basictype=J,type=JAL;break;
+                case 103:basictype=I,type=JALR;break;
                 case 99:
                 {
                     switch (func3) 
@@ -65,7 +62,6 @@ class Instruction
                         case 6:type=BLTU;break;
                         case 7:type=BGEU;break;
                     }
-                    willjump=prd->willJump(type);
                     basictype=B;
                     break;
                 }
@@ -129,23 +125,19 @@ class Instruction
             rs1=seq>>15&31;
             rs2=seq>>20&31;
             rd=seq>>7&31;
-            switch (basictype) 
+            switch (basictype)  //calc imm
             {
-                case I:imm=seq>>20;break;
-                case S:imm=(seq>>7&31)+(seq>>25<<5);break;
-                case B:imm=(seq>>8<<1&31)+(seq>>25<<5&2047)+((seq>>7&1)<<11)+(seq>>31<<12);break;
+                case I:imm=sext(seq>>20,11);break;
+                case S:imm=sext((seq>>7&31)+(seq>>25<<5),11);break;
+                case B:imm=sext((seq>>8<<1&31)+(seq>>25<<5&2047)+((seq>>7&1)<<11)+(seq>>31<<12),12);break;
                 case U:imm=seq>>12<<12;break;
-                case J:imm=(seq>>21<<1&2047)+((seq>>20&1)<<11)+((seq>>12&255)<<12)+(seq>>31<<20);break;
+                case J:imm=sext((seq>>21<<1&2047)+((seq>>20&1)<<11)+((seq>>12&255)<<12)+(seq>>31<<20),20);break;
             }
         }
         // debug
         Instructiontypes gettype()
         {
             return type;
-        }
-        bool &willJump()
-        {
-            return willjump;
         }
 };
 #endif

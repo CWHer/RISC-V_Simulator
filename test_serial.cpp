@@ -14,7 +14,7 @@ InstructionFetch IF;
 InstructionDecode ID(&prd);
 Execute EXE;
 MemoryAccess MEM;
-WriteBack WB(0);
+WriteBack WB();
 int main()
 {
 

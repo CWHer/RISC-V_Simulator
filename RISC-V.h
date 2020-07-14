@@ -1,6 +1,13 @@
 #ifndef __RISC_V__
 #define __RISC_V__
 
+#include<utility>
+#include<queue>
+#include<vector>
+#include<algorithm>
+#include<cstdio>
+#include<cstring>
+
 enum States{ST,WT,WNT,SNT}; //S:strongly    W:weakly    N:not   T:take
 enum Basictypes{R,I,S,B,U,J};
 enum Instructiontypes
@@ -13,24 +20,21 @@ enum Instructiontypes
     ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND,
     EMPTY
 };
-struct forward
+struct Resnode
 {
-    Instructiontypes type;
-    unsigned rd,temp_result,temp_resultpc;
-    forward() 
+    unsigned rd;
+    unsigned num;   //fetch timestamp
+    unsigned pc;    //option pc
+    Instructiontypes Op;
+    Resnode *Qj,*Qk;
+    unsigned Vj,Vk;  //operand value
+    unsigned A;  //addr
+    bool isBusy;
+    Resnode()
     {
-        type=EMPTY;
-        rd=temp_result=temp_resultpc=0;
-    }
-    forward(Instructiontypes _type,unsigned _rd,
-            unsigned _temp_result,unsigned _temp_resultpc)
-        :type(_type),rd(_rd),
-            temp_result(_temp_result),
-            temp_resultpc(_temp_resultpc) {}
-    void init()
-    {
-        type=EMPTY;
-        rd=temp_result=temp_resultpc=0;
+        Op=EMPTY;
+        Qj=Qk=NULL;
+        Vj=Vk=A=isBusy=0;
     }
 };
 const char *str[]=
@@ -43,6 +47,11 @@ const char *str[]=
     "ADD","SUB","SLL","SLT","SLTU","XOR","SRL","SRA","OR","AND",
     "EMPTY"
 };
+unsigned sext(unsigned x,int n) //sign-extend
+{
+    return (x>>n)&1?x|0xffffffff>>n<<n:x;
+}     
+unsigned setlow0(unsigned x) {return (x|1)^1;}
 int isJump(Instructiontypes type)
 {
     int ret=0;
@@ -75,4 +84,5 @@ int isSL(Instructiontypes type)
     }
     return ret;
 }
+
 #endif

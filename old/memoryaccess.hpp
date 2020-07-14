@@ -16,7 +16,6 @@ class MemoryAccess
         Executor exe;
         bool isend;
         int wait_clk;
-        forward fwd;
     public:
         void init(Execute &EXE)
         {
@@ -32,7 +31,6 @@ class MemoryAccess
         {
             Instruction opt;
             exe.init(opt);
-            fwd.init();
         }
         void run()
         {
@@ -43,12 +41,6 @@ class MemoryAccess
                 if (wait_clk) return;
             }
             exe.memory_access(mem,reg);
-            if (gettype()!=SB&&gettype()!=SH&&gettype()!=SW) fwd=exe.genfwd();
-        }
-        void forwarding(Execute &EXE)
-        {
-            EXE.fwd=fwd;
-            fwd.init();
         }
         void putwclk(int clk)  //put wait clk
         {
