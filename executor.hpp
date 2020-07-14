@@ -40,7 +40,7 @@ class Executor
             switch (opt.type)
             {
                 case LUI:temp_result=imm;break;
-                case AUIPC:temp_result=reg->getpc()+imm;break;
+                case AUIPC:temp_result=reg->getpc()-4+imm;break;
                 //control instructions begin
                 //jump
                 case JAL:   //J type

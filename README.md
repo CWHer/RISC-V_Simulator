@@ -16,6 +16,7 @@
 - [x] control hazard: prediction&api   
 - [x] optimize prediction
 - [x] optimize code runtime (-O3 is enough)
+- [ ] optimize redundancy in code (e.g. EXE.run)
 - [ ] reform images in README
 - [ ] a brief introduction about RISC-V in README
 - [ ] and so on……
