@@ -48,7 +48,7 @@ class RISC_V        //mode  0(default):serial   1:parallel
                 {
                     if (!isSL(EXE.gettype()))   //skip MEM if without SL
                     {
-                        if (MEM2WB)     //WAW
+                        if (MEM2WB)     //structural hazard
                             isStall=1;  
                         else 
                             WB.init(MEM);  

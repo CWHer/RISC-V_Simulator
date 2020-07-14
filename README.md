@@ -124,7 +124,7 @@ Note over WB: exe.writeback
 
 ### Ver 2.3
 
-> 修复一个WAW data hazard
+> 修复一个 structural hazard
 >
 > 由于非s&l不经过MEM，可能同时发生MEM->WB&EXE->WB
 >
