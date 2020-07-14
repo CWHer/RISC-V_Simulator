@@ -17,6 +17,7 @@
 - [x] optimize prediction
 - [x] optimize code runtime (-O3 is enough)
 - [ ] optimize redundancy in code (e.g. EXE.run)
+- [ ] fix ambiguity in code(e.g. reset and init)
 - [ ] reform images in README
 - [ ] a brief introduction about RISC-V in README
 - [ ] and so on……
@@ -31,7 +32,7 @@
 
 - 流程图
 
-![](\img\proc.png)
+![](img\proc.png)
 
 - 基础类
 
