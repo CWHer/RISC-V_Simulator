@@ -1,4 +1,4 @@
-# RISC-V Simulator
+# RISC-V Simulator (pipeline version)
 
 `to do`
 
@@ -16,8 +16,7 @@
 - [x] control hazard: prediction&api   
 - [x] optimize prediction
 - [x] optimize code runtime (-O3 is enough)
-- [ ] Tomasulo
-- [ ] precise stop (?
+- [ ] reform images in README
 - [ ] a brief introduction about RISC-V in README
 - [ ] and so on……
 
