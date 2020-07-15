@@ -40,6 +40,8 @@ class Issue
             else reg->nextpc();
             res->push(opt);
             ROB->push(opt);
+            //debug
+            std::cout<<str[opt.type]<<std::endl;
         }
         bool empty()
         {

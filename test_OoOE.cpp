@@ -45,6 +45,8 @@ int main()
         if (!CDB.empty()) CDB.run(&res,&ROB);
         if (!ROB.empty()) isRE=ROB.run();
         if (isRE) refresh();
+        //debug
+        reg.printdata();
     }
     // std::cout<<cnt<<std::endl;
     int num=prd.tot-ROB.tot();
