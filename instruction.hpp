@@ -10,7 +10,6 @@ class Instruction
 {
     friend class Executor;
     private:
-        unsigned pc;
         unsigned seq;
         unsigned rs1,rs2,rd;
         unsigned imm;
@@ -38,7 +37,6 @@ class Instruction
         {
             reset();
             unsigned pc=reg->getpc()+fwd.temp_resultpc;
-            if (fwd.type==JALR) pc=fwd.temp_resultpc;
             seq=mem->load(pc,4);
             reg->nextpc();
             return seq==0x0ff00513; 

@@ -14,7 +14,7 @@ InstructionFetch IF;
 InstructionDecode ID(&prd);
 Execute EXE;
 MemoryAccess MEM;
-WriteBack WB(1);
+WriteBack WB;
 int main()
 {
     // std::ios::sync_with_stdio(0);
@@ -23,7 +23,7 @@ int main()
     bool MEM2WB,isPB,isStall;     //whether MEM->WB 
     mem.init_read();
     IF.init(&mem,&reg);
-    int cnt=0,wcnt=0;
+    int cnt=0;
     do {
         // std::cout<<++cnt<<' '<<str[ID.gettype()]<<std::endl;
         // std::cout<<reg.output()<<std::endl;
@@ -39,7 +39,7 @@ int main()
         WB.init(MEM);
         if (!MEM.isLock()&&MEM.gettype()!=EMPTY) MEM.forwarding(EXE);
         EXE.run();
-        if (!EXE.check(wcnt))    //put back pipeline to last clk
+        if (!EXE.check())    //put back pipeline to last clk
         {                        //jump&incorrect pred
             reg.prevpc();
             EXE.putback(ID);
@@ -91,8 +91,8 @@ int main()
         // std::cout<<reg.getpc()<<std::endl;
         if (!isStall) ID.init(IF);
     } while (!WB.isEnd());
-    std::cout<<prd.tot-wcnt<<'/'<<prd.tot<<' ';
-    std::cout<<std::setprecision(2)<<(double)(prd.tot-wcnt)/prd.tot<<std::endl;
+    std::cout<<prd.tot-EXE.tot()<<'/'<<prd.tot<<' ';
+    std::cout<<std::setprecision(2)<<(double)(prd.tot-EXE.tot())/prd.tot<<std::endl;
     std::cout<<cnt<<std::endl;
     std::cout<<reg.output()<<std::endl;
     return 0;

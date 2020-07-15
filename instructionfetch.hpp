@@ -27,6 +27,7 @@ class InstructionFetch
         {
             opt.reset();
             fwd.reset();
+            wait_clk=0;
         }
         void run()
         {

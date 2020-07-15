@@ -19,10 +19,14 @@ class Executor
             return reg->getdata(pos);
         }
     public:
-        // Execute(Instruction *_opt,Register *_reg,Memory *_mem):reg(_reg),opt(_opt),mem(_mem) {}
         void init(Instruction _opt)
         {
             opt=_opt;
+            temp_result=temp_resultpc=addr=0;
+        }
+        void reset()
+        {
+            opt.reset();
             temp_result=temp_resultpc=addr=0;
         }
         void run(Register *reg,forward &fwd)    //check forwarding in EXE, similar to run
@@ -45,7 +49,7 @@ class Executor
                 case JALR:  //I type
                 {
                     temp_result=reg->getpc();
-                    temp_resultpc=setlow0(getdata(reg,rs1,fwd)+imm);
+                    temp_resultpc=setlow0(getdata(reg,rs1,fwd)+imm)-reg->getpc();
                     break;
                 }
                 //branch    //B type
@@ -107,7 +111,7 @@ class Executor
                 case SW:mem->store(addr,reg->getdata(opt.rs2),4);break;
             }
         } 
-        void write_back(Register *reg,bool isParallel)
+        void write_back(Register *reg)
         {
             unsigned rd=opt.rd;
             switch (opt.type)
@@ -123,7 +127,7 @@ class Executor
                 case JALR:  //I type
                 {
                     reg->setdata(rd,temp_result);
-                    reg->getpc()=temp_resultpc+(4*isParallel);   //nextpc in simultaneous IF(forwarding)
+                    reg->getpc()+=temp_resultpc;   //nextpc in simultaneous IF(forwarding)
                     break;
                 }
                 //branch    //B type

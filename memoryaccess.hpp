@@ -18,6 +18,7 @@ class MemoryAccess
         int wait_clk;
         forward fwd;
     public:
+        MemoryAccess():isend(0),wait_clk(0) {}
         void init(Execute &EXE)
         {
             if (isLock()) return;
@@ -30,9 +31,9 @@ class MemoryAccess
         }
         void reset()    //reset to EMPTY
         {
-            Instruction opt;
-            exe.init(opt);
+            exe.reset();
             fwd.reset();
+            wait_clk=0;
         }
         void run()
         {
@@ -43,7 +44,7 @@ class MemoryAccess
                 if (wait_clk) return;
             }
             exe.memory_access(mem,reg);
-            if (gettype()!=SB&&gettype()!=SH&&gettype()!=SW) fwd=exe.genfwd();
+            if (isSL(gettype())==1) fwd=exe.genfwd();
         }
         void forwarding(Execute &EXE)
         {

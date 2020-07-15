@@ -5,7 +5,7 @@
 - [x] fix reg[0] bug
 - [x] fix execute bug/how execute jal&jalr...
 - [x] fix program counter/when to execute next_pc?
-- [x] refactor EXE&MEM&WB
+- [x] refactor in EXE&MEM&WB
 - [x] separate instructions executing section
 - [x] mem access
 - [x] writeback
@@ -17,7 +17,7 @@
 - [x] optimize prediction
 - [x] optimize code runtime (-O3 is enough)
 - [ ] optimize redundancy in code (e.g. EXE.run)
-- [ ] fix ambiguity in code(e.g. reset and init)
+- [x] fix ambiguity in code(e.g. reset and init)
 - [ ] reform images in README
 - [ ] a brief introduction about RISC-V in README
 - [ ] and so on……
@@ -226,6 +226,10 @@ Note over WB: exe.writeback
 >feature
 >
 >- 对于B-type inst，增加了EXE->IF的forwarding
+>
+>  notice：在pipeline版本里的branch inst采用$pc\leftarrow pc+\Delta pc$方式更新
+>
+>  所以就算某个branch inst后续修改了pc也可以继续原来的方式更新pc
 >
 >**运行时间**
 >
