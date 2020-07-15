@@ -10,8 +10,10 @@ class Executor
 {
     // friend class Execute;
     friend class CommonDataBus;
+    friend class ReorderBuffer;
     private:
         Resnode opt;
+        Resnode *ptr;   //point at its place in Res
         unsigned temp_result,temp_resultpc;
     public:
         // void init(Resnode _opt)
@@ -19,6 +21,11 @@ class Executor
         //     opt=_opt;
         //     temp_result=temp_resultpc=addr=0;
         // }
+        void init(Resnode *_opt)
+        {
+            opt=*_opt,ptr=_opt;
+            temp_result=temp_resultpc=0;
+        }
         void reset()
         {
             opt.reset();
@@ -87,7 +94,7 @@ class Executor
                 case AND:temp_result=opt.Vj&opt.Vk;break;
             }
         }
-        void memory_access(Memory *mem,Register *reg)
+        void memory_access(Memory *mem)
         {
             switch (opt.Op)
             {
@@ -98,14 +105,14 @@ class Executor
                 case LW:temp_result=mem->load(opt.A,4);break;
                 case LBU:temp_result=mem->load(opt.A,1);break;
                 case LHU:temp_result=mem->load(opt.A,2);break;
-                //S type
-                case SB:mem->store(opt.A,opt.Vk,1);break;
-                case SH:mem->store(opt.A,opt.Vk,2);break;
-                case SW:mem->store(opt.A,opt.Vk,4);break;
+                //S type    //move to write_back in OoOE 
+                // case SB:mem->store(opt.A,opt.Vk,1);break;
+                // case SH:mem->store(opt.A,opt.Vk,2);break;
+                // case SW:mem->store(opt.A,opt.Vk,4);break;
             }
         } 
-        void write_back(Register *reg) const
-        {
+        void write_back(Memory *mem,Register *reg)
+        {   //pc will be modified earlier in fetch
             switch (opt.Op)
             {
                 //control instructions begin
@@ -122,6 +129,10 @@ class Executor
                     reg->getpc()=temp_resultpc;   //nextpc in simultaneous IF(forwarding)
                     break;
                 }
+                //store
+                case SB:mem->store(opt.A,opt.Vk,1);break;
+                case SH:mem->store(opt.A,opt.Vk,2);break;
+                case SW:mem->store(opt.A,opt.Vk,4);break;
                 //branch    //B type
                 case BEQ:;
                 case BNE:

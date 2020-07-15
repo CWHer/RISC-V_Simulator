@@ -25,9 +25,9 @@ class Register
             if (pos==0) return;     //avoid modify reg[0]
             data[pos]=val;
         }
-        bool isemptyQi(unsigned pos)
+        Resnode *getQi(unsigned pos)
         {
-            return Qi[pos]==NULL;
+            return Qi[pos];
         }
         void setQi(unsigned pos,Resnode *ptr)
         {
@@ -41,10 +41,10 @@ class Register
         {
             pc+=4;
         }
-        void prevpc()
-        {
-            pc-=4;
-        }
+        // void prevpc()
+        // {
+        //     pc-=4;
+        // }
         unsigned output()  //end
         {
             return data[10]&255;

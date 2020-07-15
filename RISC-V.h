@@ -20,11 +20,11 @@ enum Instructiontypes
     ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND,
     EMPTY
 };
-struct Resnode
+struct Resnode  //node in res station
 {
     unsigned rd;
     unsigned num;   //fetch timestamp
-    unsigned pc;    //option pc
+    unsigned pc;    //pc location
     Instructiontypes Op;
     Resnode *Qj,*Qk;
     unsigned Vj,Vk;  //operand value
@@ -44,6 +44,18 @@ struct Resnode
         Vj=Vk=A=isBusy=0;
     }
 };
+// struct ROBnode  //node in ROB
+// {
+//     Resnode opt;
+//     unsigned temp_result,temp_resultpc;
+//     bool isReady;
+//     ROBnode() 
+//     {
+//         temp_result=0;
+//         temp_resultpc=0;
+//         isReady=0;
+//     }
+// };
 const char *str[]=
 {
     "LUI","AUIPC","JAL","JALR",

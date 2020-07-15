@@ -8,8 +8,10 @@
 
 class Instruction
 {
+    friend class Issue;
     friend class Executor;
     friend class ReservationStation;
+    friend class ReorderBuffer;
     private:
         static unsigned instcnt;    //initial with 0, in this file
         unsigned num;
@@ -42,10 +44,9 @@ class Instruction
             num=++instcnt;
             pc=reg->getpc();
             seq=mem->load(pc,4);
-            reg->nextpc();
             return seq==0x0ff00513; 
         }
-        void decode(Predictor *prd)
+        void decode()
         {
             unsigned opcode=seq&127;
             unsigned func3=seq>>12&7;
@@ -145,6 +146,6 @@ class Instruction
             return type;
         }
 };
-Instruction::instcnt=0;
+unsigned Instruction::instcnt=0;
 
 #endif
