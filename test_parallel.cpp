@@ -7,9 +7,6 @@
 #include"execute.hpp"
 #include"memoryaccess.hpp"
 #include"writeback.hpp"
-#include<iostream>
-#include<iomanip>
-#include<cstdio>
 Register reg;
 Memory mem;
 Predictor prd;

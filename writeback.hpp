@@ -1,6 +1,7 @@
 #ifndef __WRITEBACK__
 #define __WRITEBACK__
 
+#include"RISC-V.h"
 #include"instruction.hpp"
 #include"memory.hpp"
 #include"register.hpp"

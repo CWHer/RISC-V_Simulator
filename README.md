@@ -55,6 +55,16 @@ graph TD;
 	D-->D3[write back];
 ```
 
+```mermaid
+graph TD;
+	C[Predictor]-->push;
+	C-->update;
+	C-->willJump;
+	C-->counter2
+```
+
+
+
 - 流水模块
 
 ```mermaid

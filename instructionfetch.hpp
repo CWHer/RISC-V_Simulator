@@ -23,6 +23,11 @@ class InstructionFetch
             mem=_mem;
             reg=_reg;
         }
+        void reset()    //reset to EMPTY
+        {
+            opt.reset();
+            fwd.reset();
+        }
         void run()
         {
             if (wait_clk>0)
@@ -31,20 +36,9 @@ class InstructionFetch
                 if (wait_clk) return;
             }
             isend=opt.fetch(mem,reg,fwd);
-            fwd.init();
+            fwd.reset();
             if (isend) reset();
         }
-        void reset()    //reset to EMPTY
-        {
-            opt.init();
-            fwd.init();
-        }
-        // void putback()  //put one instruction back when it meets sth like JAL
-        // {
-        //     isend=0;             //can be replaced by reset()
-        //     // reg->prevpc();
-        //     opt.init();
-        // }
         void putwclk(int clk)  //put wait clk
         {
             wait_clk+=clk;

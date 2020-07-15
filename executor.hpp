@@ -11,15 +11,8 @@ class Executor
     friend class Execute;
     private:
         Instruction opt;
-        // Register *reg;
-        // Memory *mem;
         unsigned addr;
         unsigned temp_result,temp_resultpc;
-        unsigned sext(unsigned x,int n) //sign-extend
-        {
-            return (x>>n)&1?x|0xffffffff>>n<<n:x;
-        }     
-        unsigned setlow0(unsigned x) {return (x|1)^1;}
         unsigned getdata(Register *reg,unsigned pos,forward &fwd)
         {
             if (fwd.type!=EMPTY&&pos==fwd.rd) return fwd.temp_result;
@@ -46,22 +39,22 @@ class Executor
                 case JAL:   //J type
                 {
                     temp_result=reg->getpc();
-                    temp_resultpc=sext(imm,20)-4;
+                    temp_resultpc=imm-4;
                     break;
                 }
                 case JALR:  //I type
                 {
                     temp_result=reg->getpc();
-                    temp_resultpc=setlow0(getdata(reg,rs1,fwd)+sext(imm,11));
+                    temp_resultpc=setlow0(getdata(reg,rs1,fwd)+imm);
                     break;
                 }
                 //branch    //B type
-                case BEQ:temp_resultpc=(sext(imm,12)-4)*(getdata(reg,rs1,fwd)==getdata(reg,rs2,fwd));break;
-                case BNE:temp_resultpc=(sext(imm,12)-4)*(getdata(reg,rs1,fwd)!=getdata(reg,rs2,fwd));break;
-                case BLT:temp_resultpc=(sext(imm,12)-4)*((int)getdata(reg,rs1,fwd)<(int)getdata(reg,rs2,fwd));break;
-                case BGE:temp_resultpc=(sext(imm,12)-4)*((int)getdata(reg,rs1,fwd)>=(int)getdata(reg,rs2,fwd));break;
-                case BLTU:temp_resultpc=(sext(imm,12)-4)*(getdata(reg,rs1,fwd)<getdata(reg,rs2,fwd));break;
-                case BGEU:temp_resultpc=(sext(imm,12)-4)*(getdata(reg,rs1,fwd)>=getdata(reg,rs2,fwd));break;
+                case BEQ:temp_resultpc=(imm-4)*(getdata(reg,rs1,fwd)==getdata(reg,rs2,fwd));break;
+                case BNE:temp_resultpc=(imm-4)*(getdata(reg,rs1,fwd)!=getdata(reg,rs2,fwd));break;
+                case BLT:temp_resultpc=(imm-4)*((int)getdata(reg,rs1,fwd)<(int)getdata(reg,rs2,fwd));break;
+                case BGE:temp_resultpc=(imm-4)*((int)getdata(reg,rs1,fwd)>=(int)getdata(reg,rs2,fwd));break;
+                case BLTU:temp_resultpc=(imm-4)*(getdata(reg,rs1,fwd)<getdata(reg,rs2,fwd));break;
+                case BGEU:temp_resultpc=(imm-4)*(getdata(reg,rs1,fwd)>=getdata(reg,rs2,fwd));break;
                 //load instructions begin   //I type
                 case LB: 
                 case LH: 
@@ -70,15 +63,15 @@ class Executor
                 case LHU:
                 case SB:    //S type
                 case SH:
-                case SW:addr=getdata(reg,rs1,fwd)+sext(imm,11);break;
+                case SW:addr=getdata(reg,rs1,fwd)+imm;break;
                 //arithmetic and logic instructions begin
                 //I type
-                case ADDI:temp_result=getdata(reg,rs1,fwd)+sext(imm,11);break;
-                case SLTI:temp_result=((int)getdata(reg,rs1,fwd)<(int)sext(imm,11));break;
-                case SLTIU:temp_result=(getdata(reg,rs1,fwd)<sext(imm,11));break;
-                case XORI:temp_result=getdata(reg,rs1,fwd)^sext(imm,11);break;
-                case ORI:temp_result=getdata(reg,rs1,fwd)|sext(imm,11);break;
-                case ANDI:temp_result=getdata(reg,rs1,fwd)&sext(imm,11);break;
+                case ADDI:temp_result=getdata(reg,rs1,fwd)+imm;break;
+                case SLTI:temp_result=((int)getdata(reg,rs1,fwd)<(int)imm);break;
+                case SLTIU:temp_result=(getdata(reg,rs1,fwd)<imm);break;
+                case XORI:temp_result=getdata(reg,rs1,fwd)^imm;break;
+                case ORI:temp_result=getdata(reg,rs1,fwd)|imm;break;
+                case ANDI:temp_result=getdata(reg,rs1,fwd)&imm;break;
                 case SLLI:temp_result=getdata(reg,rs1,fwd)<<shamt;break;    
                 case SRLI:temp_result=getdata(reg,rs1,fwd)>>shamt;break;
                 case SRAI:temp_result=(getdata(reg,rs1,fwd)>>shamt)|(getdata(reg,rs1,fwd)>>31<<31);break;
@@ -95,7 +88,7 @@ class Executor
                 case OR:temp_result=getdata(reg,rs1,fwd)|getdata(reg,rs2,fwd);break;
                 case AND:temp_result=getdata(reg,rs1,fwd)&getdata(reg,rs2,fwd);break;
             }
-            fwd.init();
+            fwd.reset();
         }
         void memory_access(Memory *mem,Register *reg)
         {

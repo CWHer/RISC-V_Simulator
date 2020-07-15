@@ -83,9 +83,6 @@ class Execute
                 ++wcnt;
                 if (exe.temp_resultpc!=0) return 0;
             }
-            // if (gettype()==JAL||gettype()==JALR) return 1;
-            // if (!isJump(gettype())) return 1;
-            // printf("%d\n",exe.temp_resultpc!=0);    //jump 1 njump 0
             return 1;
         }
         void update(Predictor *prd)     //feedback predictor

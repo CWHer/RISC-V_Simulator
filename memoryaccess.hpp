@@ -32,7 +32,7 @@ class MemoryAccess
         {
             Instruction opt;
             exe.init(opt);
-            fwd.init();
+            fwd.reset();
         }
         void run()
         {
@@ -48,7 +48,7 @@ class MemoryAccess
         void forwarding(Execute &EXE)
         {
             EXE.fwd=fwd;
-            fwd.init();
+            fwd.reset();
         }
         void putwclk(int clk)  //put wait clk
         {

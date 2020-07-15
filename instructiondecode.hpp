@@ -37,7 +37,7 @@ class InstructionDecode
         }
         void reset()    //reset to EMPTY
         {
-            opt.init();
+            opt.reset();
         }
         void run()
         {
