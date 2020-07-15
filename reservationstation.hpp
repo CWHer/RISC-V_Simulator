@@ -49,7 +49,7 @@ class ReservationStation
                 SLres.push_back(t);
             else
                 ALres.push_back(t);
-            if (isSL(t.Op)!=2&&isJump(t.Op)!=2)
+            if (isSL(t.Op)!=2&&!isJump(t.Op))
                 reg->setQi(t.rd,isSL(t.Op)?&SLres.back():&ALres.back());
         }
         void remove(Resnode *ptr)
@@ -91,10 +91,10 @@ class ReservationStation
             std::deque<Resnode>::iterator it;
             for(it=SLres.begin();it!=SLres.end();++it)
                 if (it->Qj==NULL&&it->Qk==NULL)
-                    if (SLU->isLock()) SLU->init(&(*it)),SLU->putwclk(3);
+                    if (!SLU->isLock()) SLU->init(&(*it)),SLU->putwclk(3);
             for(it=ALres.begin();it!=ALres.end();++it)
                 if (it->Qj==NULL&&it->Qk==NULL)
-                    if (ALU->isLock()) ALU->init(&(*it));
+                    if (!ALU->isLock()) ALU->init(&(*it));
         }
 };
 

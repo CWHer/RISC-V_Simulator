@@ -39,6 +39,10 @@ class ALUnit
             }
             exe.run();
         }   
+        bool empty()
+        {
+            return exe.gettype()==EMPTY;
+        }
 };
 
 #endif

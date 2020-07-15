@@ -61,16 +61,19 @@ class ReorderBuffer
             Executor exe=Q.front();
             Q.pop_front();
             exe.write_back(mem,reg);
-            if (isJump(exe.gettype())==1)
+            if (isJump(exe.gettype()))
             {
-                prd->update(exe.gettype(),exe.temp_resultpc!=0?-1:1);
-                prd->push(exe.gettype(),exe.temp_resultpc!=0);
-            }
-            if (exe.temp_resultpc!=Q.front().opt.pc) 
-            {
-                cnt++;
-                refresh(exe.temp_resultpc);
-                return 1;
+                if (isJump(exe.gettype())==1)
+                {
+                    prd->update(exe.gettype(),exe.temp_resultpc!=0?-1:1);
+                    prd->push(exe.gettype(),exe.temp_resultpc!=0);
+                }
+                if (exe.temp_resultpc!=Q.front().opt.pc) 
+                {
+                    cnt++;
+                    refresh(exe.temp_resultpc);
+                    return 1;
+                }
             }
             return 0;
         }

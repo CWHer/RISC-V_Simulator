@@ -71,3 +71,4 @@ Note over WB: exe.writeback
 > - 执行器分为SLU、ALU，分别为3clk、1clk
 > - CDB用了priority_queue
 > - Res station&ROB用了deque
+> - 单发

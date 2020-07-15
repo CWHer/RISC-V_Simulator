@@ -30,18 +30,21 @@ int main()
 {
     // int cnt=0;
     // freopen("out","w",stdout);
+    bool isRE=0;
     mem.init_read();
     while (!IS.empty()||!ROB.empty())
     {
+        isRE=0;
         //deal with full condition inside run
         if (!ROB.stall()&&!IS.empty()) IS.run(&res,&ROB);
         res.check(&ALU,&SLU);
         ALU.run();
         SLU.run();
-        if (!ALU.isLock()) CDB.push(ALU);
-        if (!SLU.isLock()) CDB.push(SLU);
+        if (!ALU.isLock()&&!ALU.empty()) CDB.push(ALU);
+        if (!SLU.isLock()&&!SLU.empty()) CDB.push(SLU);
         if (!CDB.empty()) CDB.run(&res,&ROB);
-        if (!ROB.empty()) ROB.run();
+        if (!ROB.empty()) isRE=ROB.run();
+        if (isRE) refresh();
     }
     // std::cout<<cnt<<std::endl;
     int num=prd.tot-ROB.tot();

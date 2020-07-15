@@ -42,6 +42,10 @@ class SLUnit
             exe.run();
             exe.memory_access(mem);
         }
+        bool empty()
+        {
+            return exe.gettype()==EMPTY;
+        }
 };
 
 #endif 
