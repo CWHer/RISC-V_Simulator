@@ -32,7 +32,7 @@
 
 - 流程图
 
-![](img\proc.png)
+![](img/proc.png)
 
 - 基础类
 
