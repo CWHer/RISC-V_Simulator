@@ -38,6 +38,7 @@ class CommonDataBus
         void run(ReservationStation *res,ReorderBuffer *ROB)
         {
             Executor exe=Q.top();
+            exe.isReady=1;
             Q.pop();
             res->update(exe.ptr,exe.temp_result);   //upd res
             if (reg->getQi(exe.opt.rd)==exe.ptr) //upd reg

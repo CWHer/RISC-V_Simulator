@@ -36,12 +36,15 @@ int main()
     {
         isRE=0;
         //deal with full condition inside run
-        if (!ROB.stall()&&!IS.empty()) IS.run(&res,&ROB);
+        if (!ROB.stall()&&!IS.empty()) 
+            IS.run(&res,&ROB);
         res.check(&ALU,&SLU);
         ALU.run();
         SLU.run();
-        if (!ALU.isLock()&&!ALU.empty()) CDB.push(ALU);
-        if (!SLU.isLock()&&!SLU.empty()) CDB.push(SLU);
+        if (!ALU.isLock()&&!ALU.empty()) 
+            CDB.push(ALU),ALU.reset();
+        if (!SLU.isLock()&&!SLU.empty()) 
+            CDB.push(SLU),SLU.reset();
         if (!CDB.empty()) CDB.run(&res,&ROB);
         if (!ROB.empty()) isRE=ROB.run();
         if (isRE) refresh();

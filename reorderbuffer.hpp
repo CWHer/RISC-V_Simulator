@@ -47,6 +47,7 @@ class ReorderBuffer
         {
             Executor t;
             t.opt.num=opt.num;
+            t.opt.Op=opt.type;
             Q.push_back(t);
         }
         void update(Executor exe)
@@ -59,6 +60,7 @@ class ReorderBuffer
         bool run()
         {
             Executor exe=Q.front();
+            if (!exe.isReady) return;
             Q.pop_front();
             exe.write_back(mem,reg);
             if (isJump(exe.gettype()))

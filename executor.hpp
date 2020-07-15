@@ -15,21 +15,26 @@ class Executor
         Resnode opt;
         Resnode *ptr;   //point at its place in Res
         unsigned temp_result,temp_resultpc;
+        bool isReady;
     public:
-        // void init(Resnode _opt)
-        // {
-        //     opt=_opt;
-        //     temp_result=temp_resultpc=addr=0;
-        // }
+        Executor()
+        {
+            ptr=NULL;
+            temp_result=0;
+            temp_resultpc=0;
+            isReady=0;
+        }
         void init(Resnode *_opt)
         {
             opt=*_opt,ptr=_opt;
             temp_result=temp_resultpc=0;
+            isReady=0;
         }
         void reset()
         {
             opt.reset();
             temp_result=temp_resultpc=0;
+            isReady=0;
         }
         void run()   
         {                              
