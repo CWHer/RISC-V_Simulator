@@ -2,48 +2,63 @@
 #include"register.hpp"
 #include"memory.hpp"
 #include"predictor.hpp"
-#include"instructionfetch.hpp"
-#include"instructiondecode.hpp"
-#include"execute.hpp"
-#include"memoryaccess.hpp"
-#include"writeback.hpp"
+#include"issue.hpp"
+#include"reservationstation.hpp"
+#include"ALUnit.hpp"
+#include"SLUnit.hpp"
+#include"commondatabus.hpp"
+#include"reorderbuffer.hpp"
 
-class RISC_V        //mode  0(default):serial   1:parallel
+class RISC_V       
 {
     private:
+        int clkcnt;
         Register reg;
         Memory *mem;
         Predictor prd;
-        InstructionFetch IF;
-        InstructionDecode ID;
-        Execute EXE;
-        MemoryAccess MEM;
-        WriteBack WB;
-        void run_serial()
+        Issue IS;
+        ReservationStation res;
+        ALUnit ALU;
+        SLUnit SLU;
+        CommonDataBus CDB;
+        ReorderBuffer ROB;
+        void refresh()
         {
-            mem->init_read();
-            IF.init(mem,&reg);
-            do {
-                IF.run(),++clkcnt;
-                ID.init(IF);
-                ID.run(),++clkcnt;
-                EXE.init(ID);
-                EXE.run();
-                if (isSL(EXE.gettype())) clkcnt+=3;
-                MEM.init(EXE);
-                MEM.run(),++clkcnt;
-                WB.init(MEM);
-                WB.run(),++clkcnt;
-            } while (!WB.isEnd());
+            reg.resetQi();
+            res.reset();
+            ALU.reset();
+            SLU.reset();
+            CDB.reset();
+            ROB.reset();
         }
-        //debug
-        int clkcnt,wcnt;    //clockcnt wrongcnt
+        void run_OoOE()
+        {
+            bool isRE=0;
+            mem->init_read();
+            while (!IS.empty()||!ROB.empty())
+            {
+                ++clkcnt,isRE=0;
+                //deal with full condition inside run
+                if (!ROB.stall()&&!IS.empty()) 
+                    IS.run(&res,&ROB);  //IF->Res
+                res.check(&ALU,&SLU);   //Res->unit
+                ALU.run(),SLU.run();
+                if (!ALU.isLock()&&!ALU.empty()) //unit->CDB
+                    CDB.push(ALU),ALU.reset();
+                if (!SLU.isLock()&&!SLU.empty()) 
+                    CDB.push(SLU),SLU.reset();
+                while (!CDB.empty()&&CDB.isReady(&ROB)) CDB.run(&res,&ROB); //CDB->ROB
+                while (!ROB.empty()&&ROB.isReady()&&!isRE) isRE=ROB.run(); //commit
+                if (isRE) refresh();
+            }
+        }
     public:
-        RISC_V(Memory *_mem,int _mode=0)
-            :clkcnt(0),wcnt(0),mem(_mem),mode(_mode),ID(&prd),WB(_mode) {}
+        RISC_V(Memory *_mem)
+            :clkcnt(0),mem(_mem),IS(_mem,&reg,&prd),
+            res(&reg),SLU(_mem),CDB(&reg),ROB(_mem,&reg,&prd) {}
         void run()
         {
-
+            run_OoOE();
         }
         unsigned output()
         {
@@ -56,7 +71,7 @@ class RISC_V        //mode  0(default):serial   1:parallel
         }
         void prdrate()
         {
-            int rcnt=prd.tot-wcnt;
-            printf("%d/%d %.2lf%\n",rcnt,prd.tot,rcnt*100.0/prd.tot);
+            int num=prd.tot-ROB.tot();
+            printf("%d/%d %.2lf%\n",num,prd.tot,num*100.0/prd.tot);
         }
 };

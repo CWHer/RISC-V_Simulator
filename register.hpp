@@ -29,6 +29,10 @@ class Register
         {
             return Qi[pos];
         }
+        void resetQi()
+        {
+            std::memset(Qi,0,sizeof(Qi));
+        }
         void setQi(unsigned pos,Resnode *ptr)
         {
             Qi[pos]=ptr;

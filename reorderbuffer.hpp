@@ -10,6 +10,7 @@
 
 class ReorderBuffer
 {
+    friend class CommonDataBus;
     private:
         Memory *mem;
         Register *reg;
@@ -39,6 +40,10 @@ class ReorderBuffer
         {
             return Q.empty();
         }
+        bool isReady()
+        {
+            return Q.front().isReady;
+        }
         void reset()
         {
             Q.clear();
@@ -61,8 +66,23 @@ class ReorderBuffer
         {
             Executor exe=Q.front();
             if (!exe.isReady) return 0;
+
+            //debug
+            // if (exe.opt.pc+4==4464)
+            // {
+                // puts("1");
+            // }
+            // std::cout<<str[exe.gettype()]<<std::endl;
+            // std::cout<<exe.opt.pc+4<<std::endl;
+            //let it consist with the only ans from serial...
+
             Q.pop_front();
             exe.write_back(mem,reg);
+
+            //debug
+            // reg->printdata();
+            // std::cout<<std::endl;
+
             if (isJump(exe.gettype()))
             {
                 if (isJump(exe.gettype())==1)
@@ -70,8 +90,8 @@ class ReorderBuffer
                     prd->update(exe.gettype(),exe.temp_resultpc!=0?-1:1);
                     prd->push(exe.gettype(),exe.temp_resultpc!=0);
                 }
-                if (Q.empty()) return 0;
-                if (exe.temp_resultpc!=Q.front().opt.pc) 
+                if ((Q.empty()&&exe.temp_resultpc!=reg->getpc())
+                    ||(!Q.empty()&&exe.temp_resultpc!=Q.front().opt.pc)) 
                 {       //catastrophic condition
                     cnt++;
                     reg->getpc()=exe.temp_resultpc;

@@ -1,3 +1,4 @@
+#include"RISC-V.h"
 #include"register.hpp"
 #include"memory.hpp"
 #include"predictor.hpp"
@@ -8,7 +9,6 @@
 #include"SLUnit.hpp"
 #include"commondatabus.hpp"
 #include"reorderbuffer.hpp"
-#include<iostream>
 Register reg;
 Memory mem;
 Predictor prd;
@@ -20,6 +20,7 @@ CommonDataBus CDB(&reg);
 ReorderBuffer ROB(&mem,&reg,&prd);
 void refresh()
 {
+    reg.resetQi();
     res.reset();
     ALU.reset();
     SLU.reset();
@@ -28,12 +29,13 @@ void refresh()
 }
 int main()
 {
-    // int cnt=0;
+    int cnt=0;
     // freopen("out","w",stdout);
     bool isRE=0;
     mem.init_read();
     while (!IS.empty()||!ROB.empty())
     {
+        ++cnt;
         isRE=0;
         //deal with full condition inside run
         if (!ROB.stall()&&!IS.empty()) 
@@ -47,19 +49,22 @@ int main()
             CDB.push(SLU),SLU.reset();
 
         // std::cout<<CDB.size()<<std::endl;
-        std::cout<<reg.getpc()<<std::endl;
-        if (reg.getpc()==4484)
-        {
-            puts("1");
-        }
+        // std::cout<<reg.getpc()<<std::endl;
+        // if (cnt>520) break;
+        // if (reg.getpc()==4472)
+        // {
+        //     puts("1");
+        // }
 
-        if (!CDB.empty()) CDB.run(&res,&ROB);
-        if (!ROB.empty()) isRE=ROB.run();
+        while (!CDB.empty()&&CDB.isReady(&ROB)) 
+            CDB.run(&res,&ROB);
+        while (!ROB.empty()&&ROB.isReady()&&!isRE) 
+            isRE=ROB.run();
         if (isRE) refresh();
         //debug
         // reg.printdata();
     }
-    // std::cout<<cnt<<std::endl;
+    std::cout<<cnt<<std::endl;
     int num=prd.tot-ROB.tot();
     printf("%d/%d %.2lf%\n",num,prd.tot,num*100.0/prd.tot);
     std::cout<<reg.output()<<std::endl;

@@ -60,12 +60,13 @@ class Executor
                     break;
                 }
                 //branch    //B type
-                case BEQ:temp_resultpc=opt.pc+4+imm*(opt.Vj==opt.Vk);break;
-                case BNE:temp_resultpc=opt.pc+4+imm*(opt.Vj!=opt.Vk);break;
-                case BLT:temp_resultpc=opt.pc+4+imm*((int)opt.Vj<(int)opt.Vk);break;
-                case BGE:temp_resultpc=opt.pc+4+imm*((int)opt.Vj>=(int)opt.Vk);break;
-                case BLTU:temp_resultpc=opt.pc+4+imm*(opt.Vj<opt.Vk);break;
-                case BGEU:temp_resultpc=opt.pc+4+imm*(opt.Vj>=opt.Vk);break;
+                //if not jump pc will also goto next
+                case BEQ:temp_resultpc=opt.pc+4+(imm-4)*(opt.Vj==opt.Vk);break;
+                case BNE:temp_resultpc=opt.pc+4+(imm-4)*(opt.Vj!=opt.Vk);break;
+                case BLT:temp_resultpc=opt.pc+4+(imm-4)*((int)opt.Vj<(int)opt.Vk);break;
+                case BGE:temp_resultpc=opt.pc+4+(imm-4)*((int)opt.Vj>=(int)opt.Vk);break;
+                case BLTU:temp_resultpc=opt.pc+4+(imm-4)*(opt.Vj<opt.Vk);break;
+                case BGEU:temp_resultpc=opt.pc+4+(imm-4)*(opt.Vj>=opt.Vk);break;
                 //load&store instructions begin   //I type
                 case LB: 
                 case LH: 
@@ -123,10 +124,10 @@ class Executor
             {
                 //control instructions begin
                 //jump
-                case JAL:   //J type
+                case JAL:   //J type    //pc in JAL&B type were dealed in IS
                 {
                     reg->setdata(opt.rd,temp_result);
-                    reg->getpc()=temp_resultpc;    //!!! += --> = in OoOE
+                    // reg->getpc()=temp_resultpc;    //!!! += --> = in OoOE
                     break;
                 }
                 case JALR:  //I type
@@ -140,12 +141,12 @@ class Executor
                 case SH:mem->store(opt.A,opt.Vk,2);break;
                 case SW:mem->store(opt.A,opt.Vk,4);break;
                 //branch    //B type
-                case BEQ:;
-                case BNE:
-                case BLT:
-                case BGE:
-                case BLTU:
-                case BGEU:reg->getpc()=temp_resultpc;break;  //!!! += --> = in OoOE
+                // case BEQ:;
+                // case BNE:
+                // case BLT:
+                // case BGE:
+                // case BLTU:
+                // case BGEU:reg->getpc()=temp_resultpc;break;  //!!! += --> = in OoOE
                 //load and store instructions begin   
                 //I type
                 case LB: 

@@ -46,7 +46,7 @@ class Issue
             res->push(opt);
             ROB->push(opt);
             //debug
-            std::cout<<str[opt.type]<<std::endl;
+            // std::cout<<str[opt.type]<<std::endl;
             // if (opt.type==BNE)
             // {
             //     puts("1");

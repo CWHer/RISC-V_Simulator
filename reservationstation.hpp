@@ -102,6 +102,7 @@ class ReservationStation
                     if (!it->isBusy&&!ALU->isLock()) 
                     {
                         ALU->init(&(*it));
+                        ALU->putwclk(1);
                         it->isBusy=1;
                     }
         }

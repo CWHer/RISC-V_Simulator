@@ -23,6 +23,14 @@ class CommonDataBus
         std::priority_queue<Executor,std::vector<Executor>,cmp> Q;
     public:
         CommonDataBus(Register *_reg):reg(_reg) {}
+        bool isReady(ReorderBuffer *ROB)
+        {
+            if (ROB->empty()) return 1;
+            std::deque<Executor>::iterator it;
+            for(it=ROB->Q.begin();it->opt.num!=Q.top().opt.num;++it)
+                if (!it->isReady) return 0;
+            return 1;
+        }
         void push(SLUnit SLU)
         {
             Q.push(SLU.exe);
@@ -43,7 +51,7 @@ class CommonDataBus
             res->update(exe.ptr,exe.temp_result);   //upd res
             if (reg->getQi(exe.opt.rd)==exe.ptr) //upd reg
                 reg->setQi(exe.opt.rd,NULL);
-            res->remove(exe.ptr);   //remove ptr in reg
+            res->remove(exe.ptr);   //remove ptr in res
             ROB->update(exe);
         }
         bool empty()
