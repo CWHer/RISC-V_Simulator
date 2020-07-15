@@ -50,6 +50,11 @@ class CommonDataBus
         {
             return Q.empty();
         }
+        //debug
+        unsigned size()
+        {
+            return Q.size();
+        }
 };
 
 #endif

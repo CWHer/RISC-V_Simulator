@@ -17,9 +17,9 @@ class ReorderBuffer
         unsigned cnt;//incorrect prediction cnt
         static const int N=10;
         std::deque<Executor> Q;
-        void refresh(unsigned pc)//catastrophic option
+        void refresh(unsigned pc)
         {
-            reg->getpc()=pc;
+            
         }
     public:
         ReorderBuffer(Memory *_mem,Register *_reg,Predictor *_prd)
@@ -60,7 +60,7 @@ class ReorderBuffer
         bool run()
         {
             Executor exe=Q.front();
-            if (!exe.isReady) return;
+            if (!exe.isReady) return 0;
             Q.pop_front();
             exe.write_back(mem,reg);
             if (isJump(exe.gettype()))
@@ -70,10 +70,11 @@ class ReorderBuffer
                     prd->update(exe.gettype(),exe.temp_resultpc!=0?-1:1);
                     prd->push(exe.gettype(),exe.temp_resultpc!=0);
                 }
+                if (Q.empty()) return 0;
                 if (exe.temp_resultpc!=Q.front().opt.pc) 
-                {
+                {       //catastrophic condition
                     cnt++;
-                    refresh(exe.temp_resultpc);
+                    reg->getpc()=exe.temp_resultpc;
                     return 1;
                 }
             }

@@ -33,6 +33,7 @@ class Executor
         void reset()
         {
             opt.reset();
+            ptr=NULL;
             temp_result=temp_resultpc=0;
             isReady=0;
         }
@@ -59,12 +60,12 @@ class Executor
                     break;
                 }
                 //branch    //B type
-                case BEQ:temp_resultpc=opt.pc+imm*(opt.Vj==opt.Vk);break;
-                case BNE:temp_resultpc=opt.pc+imm*(opt.Vj!=opt.Vk);break;
-                case BLT:temp_resultpc=opt.pc+imm*((int)opt.Vj<(int)opt.Vk);break;
-                case BGE:temp_resultpc=opt.pc+imm*((int)opt.Vj>=(int)opt.Vk);break;
-                case BLTU:temp_resultpc=opt.pc+imm*(opt.Vj<opt.Vk);break;
-                case BGEU:temp_resultpc=opt.pc+imm*(opt.Vj>=opt.Vk);break;
+                case BEQ:temp_resultpc=opt.pc+4+imm*(opt.Vj==opt.Vk);break;
+                case BNE:temp_resultpc=opt.pc+4+imm*(opt.Vj!=opt.Vk);break;
+                case BLT:temp_resultpc=opt.pc+4+imm*((int)opt.Vj<(int)opt.Vk);break;
+                case BGE:temp_resultpc=opt.pc+4+imm*((int)opt.Vj>=(int)opt.Vk);break;
+                case BLTU:temp_resultpc=opt.pc+4+imm*(opt.Vj<opt.Vk);break;
+                case BGEU:temp_resultpc=opt.pc+4+imm*(opt.Vj>=opt.Vk);break;
                 //load&store instructions begin   //I type
                 case LB: 
                 case LH: 

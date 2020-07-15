@@ -45,11 +45,19 @@ int main()
             CDB.push(ALU),ALU.reset();
         if (!SLU.isLock()&&!SLU.empty()) 
             CDB.push(SLU),SLU.reset();
+
+        // std::cout<<CDB.size()<<std::endl;
+        std::cout<<reg.getpc()<<std::endl;
+        if (reg.getpc()==4484)
+        {
+            puts("1");
+        }
+
         if (!CDB.empty()) CDB.run(&res,&ROB);
         if (!ROB.empty()) isRE=ROB.run();
         if (isRE) refresh();
         //debug
-        reg.printdata();
+        // reg.printdata();
     }
     // std::cout<<cnt<<std::endl;
     int num=prd.tot-ROB.tot();

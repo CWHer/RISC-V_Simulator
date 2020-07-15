@@ -22,7 +22,12 @@ class Issue
         void run(ReservationStation *res,ReorderBuffer *ROB) 
         {    //if res&ROB not full && no JALR & S-type in ROB
             Instruction opt;
-            isEmpty=opt.fetch(mem,reg);
+            if (opt.fetch(mem,reg))
+            {
+                isEmpty=1;
+                opt.reset();
+                return;
+            }
             opt.decode();
             if (ROB->full()||res->full(opt.type)) return;
             if (isJump(opt.type)&&opt.type!=JALR)
@@ -42,6 +47,10 @@ class Issue
             ROB->push(opt);
             //debug
             std::cout<<str[opt.type]<<std::endl;
+            // if (opt.type==BNE)
+            // {
+            //     puts("1");
+            // }
         }
         bool empty()
         {

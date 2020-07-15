@@ -30,7 +30,7 @@ struct Resnode  //node in res station
     Resnode *Qj,*Qk;
     unsigned Vj,Vk;  //operand value
     unsigned A;  //addr
-    bool isBusy;
+    bool isBusy;    //indicate whether it's in unit, unlike what in CAAQA 
     Resnode()
     {
         Op=EMPTY;

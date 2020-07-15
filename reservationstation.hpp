@@ -44,12 +44,12 @@ class ReservationStation
                 }
                 else t.Vk=opt.rs2;  //shamt in I-type
             }
-            t.A=opt.imm,t.isBusy=1;
+            t.A=opt.imm,t.isBusy=0;
             if (isSL(opt.type))
                 SLres.push_back(t);
             else
                 ALres.push_back(t);
-            if (isSL(t.Op)!=2&&!isJump(t.Op))
+            if (isSL(t.Op)!=2&&isJump(t.Op)!=1) //JAL also modify reg
                 reg->setQi(t.rd,isSL(t.Op)?&SLres.back():&ALres.back());
         }
         void remove(Resnode *ptr)
@@ -76,14 +76,14 @@ class ReservationStation
                 if (it->Qj==opt)
                     it->Qj=NULL,it->Vj=val;
                 if (it->Qk==opt)
-                    it->Qj=NULL,it->Vj=val;
+                    it->Qk=NULL,it->Vk=val;
             }
             for(it=ALres.begin();it!=ALres.end();++it)
             {
                 if (it->Qj==opt)
                     it->Qj=NULL,it->Vj=val;
                 if (it->Qk==opt)
-                    it->Qj=NULL,it->Vj=val;
+                    it->Qk=NULL,it->Vk=val;
             }
         }
         void check(ALUnit *ALU,SLUnit *SLU)    //when V ready goto unit
@@ -91,10 +91,19 @@ class ReservationStation
             std::deque<Resnode>::iterator it;
             for(it=SLres.begin();it!=SLres.end();++it)
                 if (it->Qj==NULL&&it->Qk==NULL)
-                    if (!SLU->isLock()) SLU->init(&(*it)),SLU->putwclk(3);
+                    if (!it->isBusy&&!SLU->isLock()) 
+                    {
+                        SLU->init(&(*it));
+                        SLU->putwclk(3);
+                        it->isBusy=1;
+                    }
             for(it=ALres.begin();it!=ALres.end();++it)
                 if (it->Qj==NULL&&it->Qk==NULL)
-                    if (!ALU->isLock()) ALU->init(&(*it));
+                    if (!it->isBusy&&!ALU->isLock()) 
+                    {
+                        ALU->init(&(*it));
+                        it->isBusy=1;
+                    }
         }
 };
 
