@@ -30,6 +30,7 @@ class Issue
             }
             opt.decode();
             if (ROB->full()||res->full(opt.type)) return 1;
+            opt.num=++opt.instcnt;
             if (isJump(opt.type)&&opt.type!=JALR)
             {
                 if (isJump(opt.type)==1)

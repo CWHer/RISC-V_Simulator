@@ -33,6 +33,7 @@ int main()
     int cnt=0;
     // freopen("out","w",stdout);
     // freopen("ans","w",stdout);
+    ROB.setStopNum(150);
     bool isRE=0,isfull=0;
     mem.init_read();
     while (!IS.empty()||!ROB.empty())

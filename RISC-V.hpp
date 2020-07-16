@@ -65,7 +65,6 @@ class RISC_V
         {
             return reg.output();
         }
-        //debug
         int clktimes()
         {
             return clkcnt;
@@ -74,5 +73,9 @@ class RISC_V
         {
             int num=prd.tot-ROB.tot();
             printf("%d/%d %.2lf%\n",num,prd.tot,num*100.0/prd.tot);
+        }
+        void setStopNum(unsigned num)
+        {
+            ROB.setStopNum(num);
         }
 };
