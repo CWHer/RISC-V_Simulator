@@ -97,6 +97,7 @@ graph TD;
 > - CDB用了priority_queue
 > - Res station&ROB用了deque
 > - 单发
+> - 多次提交
 >
 > notice
 >
@@ -119,3 +120,16 @@ graph TD;
 >   反馈具有延迟性，无法及时更新预测器
 >
 > - 如果按照循环计算clk的话，这个版本比parallel的确快很多，尽管预测正确率很低
+>
+> - 遇到store inst&JALR，会暂停到这些指令commit完成
+
+### Ver 1.1
+
+> feature
+>
+> - 多发(大概是)
+>
+> fix
+>
+> - reg[0]有Qi后从ROB写入的bug
+> - refresh后没有重置IS.isEmpty

@@ -1,9 +1,7 @@
 #ifndef __MEMORY__
 #define __MEMORY__
 
-#include<cstdio>
-#include<iostream>
-#include<cstring>
+#include"RISC-V.h"
 
 class Memory
 {

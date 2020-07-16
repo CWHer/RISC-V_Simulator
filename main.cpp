@@ -1,6 +1,5 @@
 #include"RISC-V.hpp"
 #include"memory.hpp"
-#include<iostream>
 Memory mem;
 RISC_V unit(&mem);    //mode  OoOE
 int main()

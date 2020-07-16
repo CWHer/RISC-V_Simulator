@@ -68,13 +68,12 @@ class ReorderBuffer
             if (!exe.isReady) return 0;
 
             //debug
-            // if (exe.opt.pc+4==4464)
+            // if (exe.opt.pc==4920)
             // {
-                // puts("1");
+            //     puts("1");
             // }
             // std::cout<<str[exe.gettype()]<<std::endl;
-            // std::cout<<exe.opt.pc+4<<std::endl;
-            //let it consist with the only ans from serial...
+            // std::cout<<exe.opt.pc<<std::endl;
 
             Q.pop_front();
             exe.write_back(mem,reg);

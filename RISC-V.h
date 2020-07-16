@@ -8,6 +8,7 @@
 #include<cstdio>
 #include<cstring>
 #include<iostream>
+#include<iomanip>
 
 enum States{ST,WT,WNT,SNT}; //S:strongly    W:weakly    N:not   T:take
 enum Basictypes{R,I,S,B,U,J};

@@ -5,8 +5,8 @@
 
 #include"issue.hpp"
 #include"reservationstation.hpp"
-#include"ALUnit.hpp"
-#include"SLUnit.hpp"
+#include"ALunit.hpp"
+#include"SLunit.hpp"
 #include"commondatabus.hpp"
 #include"reorderbuffer.hpp"
 Register reg;
@@ -21,6 +21,7 @@ ReorderBuffer ROB(&mem,&reg,&prd);
 void refresh()
 {
     reg.resetQi();
+    IS.reset();
     res.reset();
     ALU.reset();
     SLU.reset();
@@ -31,15 +32,19 @@ int main()
 {
     int cnt=0;
     // freopen("out","w",stdout);
-    bool isRE=0;
+    // freopen("ans","w",stdout);
+    bool isRE=0,isfull=0;
     mem.init_read();
     while (!IS.empty()||!ROB.empty())
     {
         ++cnt;
-        isRE=0;
+        isRE=isfull=0;
         //deal with full condition inside run
-        if (!ROB.stall()&&!IS.empty()) 
-            IS.run(&res,&ROB);
+        // if (!ROB.stall()&&!IS.empty()) IS.run(&res,&ROB);
+
+        while (!isfull&&!ROB.stall()&&!IS.empty()) 
+            isfull=IS.run(&res,&ROB);
+        
         res.check(&ALU,&SLU);
         ALU.run();
         SLU.run();
