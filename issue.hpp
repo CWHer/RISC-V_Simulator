@@ -1,67 +1,64 @@
-#ifndef __ISSUE__
-#define __ISSUE__
+#ifndef __ISSUE_HPP__
+#define __ISSUE_HPP__
 
-#include"RISC-V.h"
-#include"instruction.hpp"
-#include"register.hpp"
-#include"memory.hpp"
-#include"reservationstation.hpp"
-#include"reorderbuffer.hpp"
-#include"predictor.hpp"
+#include "RISC-V.h"
+#include "instruction.hpp"
+#include "register.hpp"
+#include "memory.hpp"
+#include "reservation_station.hpp"
+#include "reorder_buffer.hpp"
+#include "predictor.hpp"
 
 class Issue
 {
-    private:
-        Memory *mem;
-        Register *reg;
-        Predictor *prd;
-        bool isEmpty;
-    public:
-        Issue(Memory *_mem,Register *_reg,Predictor *_prd)
-            :mem(_mem),reg(_reg),prd(_prd),isEmpty(0) {}
-        bool run(ReservationStation *res,ReorderBuffer *ROB) 
-        {    //if res&ROB not full && no JALR & S-type in ROB
-            Instruction opt;
-            if (opt.fetch(mem,reg))
-            {
-                isEmpty=1;
-                opt.reset();
-                return 0;
-            }
-            opt.decode();
-            if (ROB->full()||res->full(opt.type)) return 1;
-            opt.num=++opt.instcnt;
-            if (isJump(opt.type)&&opt.type!=JALR)
-            {
-                if (isJump(opt.type)==1)
-                {
-                    if (prd->willJump(opt.type))
-                        reg->getpc()=opt.imm+opt.pc;
-                    else
-                        reg->nextpc();
-                }
-                else    //JAL
-                    reg->getpc()=opt.imm+opt.pc;
-            }
-            else reg->nextpc();
-            res->push(opt);
-            ROB->push(opt);
+private:
+    Memory *mem;
+    Register *reg;
+    Predictor *prd;
+    bool isEmpty;
+
+public:
+    Issue(Memory *_mem, Register *_reg, Predictor *_prd)
+        : mem(_mem), reg(_reg), prd(_prd), isEmpty(0) {}
+    bool run(ReservationStation *res, ReorderBuffer *ROB)
+    { // if res&ROB not full && no JALR & S-type in ROB
+        Instruction opt;
+        if (opt.fetch(mem, reg))
+        {
+            isEmpty = 1;
+            opt.reset();
             return 0;
-            //debug
-            // std::cout<<str[opt.type]<<std::endl;
-            // if (opt.type==BNE)
-            // {
-            //     puts("1");
-            // }
         }
-        void reset()
+        opt.decode();
+        if (ROB->full() || res->full(opt.type))
+            return 1;
+        opt.num = ++opt.instcnt;
+        if (isJump(opt.type) && opt.type != JALR)
         {
-            isEmpty=0;
+            if (isJump(opt.type) == 1)
+            {
+                if (prd->willJump(opt.type))
+                    reg->getpc() = opt.imm + opt.pc;
+                else
+                    reg->nextpc();
+            }
+            else // JAL
+                reg->getpc() = opt.imm + opt.pc;
         }
-        bool empty()
-        {
-            return isEmpty;
-        }
+        else
+            reg->nextpc();
+        res->push(opt);
+        ROB->push(opt);
+        return 0;
+    }
+    void reset()
+    {
+        isEmpty = 0;
+    }
+    bool empty()
+    {
+        return isEmpty;
+    }
 };
 
 #endif
