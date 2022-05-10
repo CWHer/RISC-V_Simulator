@@ -1,31 +1,36 @@
-#ifndef __COUNTER2__
-#define __COUNTER2__
+#ifndef __COUNTER2_HPP__
+#define __COUNTER2_HPP__
 
-#include"RISC-V.h"
+#include "RISC-V.h"
 
 class Counter2
 {
-    private:
-        States state;
-    public:
-        Counter2():state(WT) {}
-        // Counter2():state(SNT) {}
-        void update(int dir)
+private:
+    States state;
+
+public:
+    Counter2() : state(WT) {}
+    // Counter2():state(SNT) {}
+    void update(int dir)
+    {
+        if (state == SNT && dir == 1)
+            return;
+        if (state == ST && dir == -1)
+            return;
+        state = (States)((int)state + dir);
+    }
+    bool willJump()
+    {
+        switch (state)
         {
-            if (state==SNT&&dir==1) return;
-            if (state==ST&&dir==-1) return;
-            state=(States)((int)state+dir); 
+        case ST:
+        case WT:
+            return 1;
+        case WNT:
+        case SNT:
+            return 0;
         }
-        bool willJump()
-        {
-            switch (state)
-            {
-                case ST:
-                case WT:return 1;
-                case WNT:
-                case SNT:return 0;
-            }
-        }
+    }
 };
 
 #endif

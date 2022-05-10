@@ -1,87 +1,139 @@
 #ifndef __RISC_V__
 #define __RISC_V__
 
-#include<cstdio>
-#include<iostream>
-#include<cstring>
-#include<iomanip>
+#include <cstdio>
+#include <iostream>
+#include <cstring>
+#include <iomanip>
 
-enum States{ST,WT,WNT,SNT}; //S:strongly    W:weakly    N:not   T:take
-enum Basictypes{R,I,S,B,U,J};
+enum States
+{
+    ST,
+    WT,
+    WNT,
+    SNT
+}; // S:strongly    W:weakly    N:not   T:take
+enum Basictypes
+{
+    R,
+    I,
+    S,
+    B,
+    U,
+    J
+};
 enum Instructiontypes
 {
-    LUI,AUIPC,JAL,JALR,
-    BEQ,BNE,BLT,BGE,BLTU,BGEU,
-    LB,LH,LW,LBU,LHU,SB,SH,SW,
-    ADDI,SLTI,SLTIU,XORI,ORI,ANDI,
-    SLLI,SRLI,SRAI,
-    ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND,
+    LUI,
+    AUIPC,
+    JAL,
+    JALR,
+    BEQ,
+    BNE,
+    BLT,
+    BGE,
+    BLTU,
+    BGEU,
+    LB,
+    LH,
+    LW,
+    LBU,
+    LHU,
+    SB,
+    SH,
+    SW,
+    ADDI,
+    SLTI,
+    SLTIU,
+    XORI,
+    ORI,
+    ANDI,
+    SLLI,
+    SRLI,
+    SRAI,
+    ADD,
+    SUB,
+    SLL,
+    SLT,
+    SLTU,
+    XOR,
+    SRL,
+    SRA,
+    OR,
+    AND,
     EMPTY
 };
 struct forward
 {
     Instructiontypes type;
-    unsigned rd,temp_result,temp_resultpc;
-    forward() 
+    unsigned rd, temp_result, temp_resultpc;
+    forward()
     {
-        type=EMPTY;
-        rd=temp_result=temp_resultpc=0;
+        type = EMPTY;
+        rd = temp_result = temp_resultpc = 0;
     }
-    forward(Instructiontypes _type,unsigned _rd,
-            unsigned _temp_result,unsigned _temp_resultpc)
-        :type(_type),rd(_rd),
-            temp_result(_temp_result),
-            temp_resultpc(_temp_resultpc) {}
+    forward(Instructiontypes _type, unsigned _rd,
+            unsigned _temp_result, unsigned _temp_resultpc)
+        : type(_type), rd(_rd),
+          temp_result(_temp_result),
+          temp_resultpc(_temp_resultpc) {}
     void reset()
     {
-        type=EMPTY;
-        rd=temp_result=temp_resultpc=0;
+        type = EMPTY;
+        rd = temp_result = temp_resultpc = 0;
     }
 };
-const char *str[]=
+const char *str[] =
+    {
+        "LUI", "AUIPC", "JAL", "JALR",
+        "BEQ", "BNE", "BLT", "BGE", "BLTU", "BGEU",
+        "LB", "LH", "LW", "LBU", "LHU", "SB", "SH", "SW",
+        "ADDI", "SLTI", "SLTIU", "XORI", "ORI", "ANDI",
+        "SLLI", "SRLI", "SRAI",
+        "ADD", "SUB", "SLL", "SLT", "SLTU", "XOR", "SRL", "SRA", "OR", "AND",
+        "EMPTY"};
+unsigned sext(unsigned x, int n) // sign-extend
 {
-    "LUI","AUIPC","JAL","JALR",
-    "BEQ","BNE","BLT","BGE","BLTU","BGEU",
-    "LB","LH","LW","LBU","LHU","SB","SH","SW",
-    "ADDI","SLTI","SLTIU","XORI","ORI","ANDI",
-    "SLLI","SRLI","SRAI",
-    "ADD","SUB","SLL","SLT","SLTU","XOR","SRL","SRA","OR","AND",
-    "EMPTY"
-};
-unsigned sext(unsigned x,int n) //sign-extend
-{
-    return (x>>n)&1?x|0xffffffff>>n<<n:x;
-}     
-unsigned setlow0(unsigned x) {return (x|1)^1;}
+    return (x >> n) & 1 ? x | 0xffffffff >> n << n : x;
+}
+unsigned setlow0(unsigned x) { return (x | 1) ^ 1; }
 int isJump(Instructiontypes type)
 {
-    int ret=0;
+    int ret = 0;
     switch (type)
     {
-        case BEQ:
-        case BNE:
-        case BLT:
-        case BGE:
-        case BLTU:
-        case BGEU:ret=1;break;
-        case JAL:
-        case JALR:ret=2;break;
+    case BEQ:
+    case BNE:
+    case BLT:
+    case BGE:
+    case BLTU:
+    case BGEU:
+        ret = 1;
+        break;
+    case JAL:
+    case JALR:
+        ret = 2;
+        break;
     }
     return ret;
 }
 int isSL(Instructiontypes type)
 {
-    int ret=0;
+    int ret = 0;
     switch (type)
     {
-        case LB:
-        case LH:
-        case LW:
-        case LBU:
-        case LHU:ret=1;break;
-        case SB:
-        case SH:
-        case SW:ret=2;break;
+    case LB:
+    case LH:
+    case LW:
+    case LBU:
+    case LHU:
+        ret = 1;
+        break;
+    case SB:
+    case SH:
+    case SW:
+        ret = 2;
+        break;
     }
     return ret;
 }
