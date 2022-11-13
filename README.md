@@ -11,9 +11,9 @@ Out-of-order execution simulator
 
 **Vanilla Tomasulo Algorithm Architecture**
 
-NOTE: CAN NOT tackle WAW & WAR hazards of memory access instructions
+NOTE: NEED extra design to tackle WAW & WAR hazards of memory access instructions
 
-HACK: stall the whole process when there is a memory write instruction (or JALR)
+HACK: Considering the complexity of the implementation, stall the whole process when there is a memory write instruction (or JALR)
 
 ![](assets/vanilla_tomasulo.png)
 
