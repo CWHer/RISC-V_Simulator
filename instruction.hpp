@@ -3,228 +3,173 @@
 
 #include "RISC-V.h"
 #include "memory.hpp"
-#include "register.hpp"
+#include "register_file.hpp"
 #include "predictor.hpp"
 
 class Instruction
 {
     friend class Issue;
-    friend class Executor;
+    friend class ExecWarp;
     friend class ReservationStation;
     friend class ReorderBuffer;
 
 private:
-    unsigned num;
-    unsigned pc;
-    unsigned seq;
+    unsigned addr;
+    unsigned inst_bytes;
     unsigned rs1, rs2, rd;
     unsigned imm;
-    Basictypes basictype;
-    Instructiontypes type;
+    BasicTypes basic_type;
+    InstructionTypes type;
 
 public:
-    static unsigned instcnt; // initial with 0, in this file
-    Instruction()
+    Instruction() : addr(0), inst_bytes(0),
+                    rs1(0), rs2(0), rd(0), imm(0),
+                    basic_type(R), type(EMPTY) {}
+
+    bool fetch(Memory *memory, RegisterFile *reg_files)
     {
-        num = pc = 0;
-        imm = seq = 0;
-        rs1 = rs2 = rd = 0;
-        type = EMPTY;
-        basictype = R;
+        static const unsigned STOP_INST = 0x0ff00513;
+        static const unsigned INST_LEN = 4; // 4 bytes
+
+        addr = reg_files->getPC();
+        inst_bytes = memory->load(addr, INST_LEN);
+
+        return inst_bytes != STOP_INST;
     }
-    void reset()
-    {
-        num = pc = 0;
-        imm = seq = 0;
-        rs1 = rs2 = rd = 0;
-        type = EMPTY;
-        basictype = R;
-    }
-    bool fetch(Memory *mem, Register *reg)
-    {
-        reset();
-        // num=++instcnt;   modify in issue
-        pc = reg->getpc();
-        seq = mem->load(pc, 4);
-        return seq == 0x0ff00513;
-    }
+
     void decode()
     {
-        unsigned opcode = seq & 127;
-        unsigned func3 = seq >> 12 & 7;
-        unsigned func7 = seq >> 25 & 127;
-        switch (opcode)
+        // unsigned op_code = inst_bytes & 127;
+        unsigned op_code = inst_bytes & 0x7f;
+        unsigned funct3 = inst_bytes >> 12 & 0x7;
+        unsigned funct7 = inst_bytes >> 25 & 0x7f;
+        switch (op_code)
         {
-        case 55:
-            basictype = U, type = LUI;
+        case 0b0110111:
+            basic_type = U, type = LUI;
             break;
-        case 23:
-            basictype = U, type = AUIPC;
+        case 0b0010111:
+            basic_type = U, type = AUIPC;
             break;
-        case 111:
-            basictype = J, type = JAL;
+        case 0b1101111:
+            basic_type = J, type = JAL;
             break;
-        case 103:
-            basictype = I, type = JALR;
+        case 0b1100111:
+            basic_type = I, type = JALR;
             break;
-        case 99:
+        case 0b1100011:
         {
-            switch (func3)
+            // clang-format off
+            static const std::map<int, InstructionTypes> type_map = {
+                {0b000, BEQ}, {0b001, BNE}, {0b100, BLT}, {0b101, BGE}, {0b110, BLTU}, {0b111, BGEU}
+            };
+            // clang-format on
+            type = type_map.at(funct3);
+            basic_type = B;
+            break;
+        }
+        case 0b0000011:
+        {
+            // clang-format off
+            static const std::map<int, InstructionTypes> type_map = {
+                {0b000, LB}, {0b001, LH}, {0b010, LW}, {0b100, LBU}, {0b101, LHU}
+            };
+            // clang-format on
+            type = type_map.at(funct3);
+            basic_type = I;
+            break;
+        }
+        case 0b0100011:
+        {
+            // clang-format off
+            static const std::map<int, InstructionTypes> type_map = {
+                {0b000, SB}, {0b001, SH}, {0b010, SW}
+            };
+            // clang-format on
+            type = type_map.at(funct3);
+            basic_type = S;
+            break;
+        }
+        case 0b0010011:
+        {
+            // clang-format off
+            static const std::map<int, InstructionTypes> type_map = {
+                {0b000, ADDI}, {0b010, SLTI}, {0b011, SLTIU}, {0b100, XORI},
+                {0b110, ORI}, {0b111, ANDI}, {0b001, SLLI}
+            };
+            // clang-format on
+            switch (funct3)
             {
-            case 0:
-                type = BEQ;
+            case 0b101:
+                type = funct7 == 0 ? SRLI : SRAI;
                 break;
-            case 1:
-                type = BNE;
-                break;
-            case 4:
-                type = BLT;
-                break;
-            case 5:
-                type = BGE;
-                break;
-            case 6:
-                type = BLTU;
-                break;
-            case 7:
-                type = BGEU;
+            default:
+                type = type_map.at(funct3);
                 break;
             }
-            basictype = B;
+            basic_type = I;
             break;
         }
-        case 3:
+
+        case 0b0110011:
         {
-            switch (func3)
+            // clang-format off
+            static const std::map<int, InstructionTypes> type_map = {
+                {0b001, SLL}, {0b010, SLT}, {0b011, SLTU}, {0b100, XOR}, {0b110, OR}, {0b111, AND}
+            };
+            // clang-format on
+
+            switch (funct3)
             {
-            case 0:
-                type = LB;
+            case 0b000:
+                type = funct7 == 0 ? ADD : SUB;
                 break;
-            case 1:
-                type = LH;
+            case 0b101:
+                type = funct7 == 0 ? SRL : SRA;
                 break;
-            case 2:
-                type = LW;
-                break;
-            case 4:
-                type = LBU;
-                break;
-            case 5:
-                type = LHU;
+            default:
+                type = type_map.at(funct3);
                 break;
             }
-            basictype = I;
-            break;
-        }
-        case 35:
-        {
-            switch (func3)
-            {
-            case 0:
-                type = SB;
-                break;
-            case 1:
-                type = SH;
-                break;
-            case 2:
-                type = SW;
-                break;
-            }
-            basictype = S;
-            break;
-        }
-        case 19:
-        {
-            switch (func3)
-            {
-            case 0:
-                type = ADDI;
-                break;
-            case 1:
-                type = SLLI;
-                break;
-            case 2:
-                type = SLTI;
-                break;
-            case 3:
-                type = SLTIU;
-                break;
-            case 4:
-                type = XORI;
-                break;
-            case 5:
-                type = func7 ? SRAI : SRLI;
-                break;
-            case 6:
-                type = ORI;
-                break;
-            case 7:
-                type = ANDI;
-                break;
-            }
-            basictype = I;
-            break;
-        }
-        case 51:
-        {
-            switch (func3)
-            {
-            case 0:
-                type = func7 ? SUB : ADD;
-                break;
-            case 1:
-                type = SLL;
-                break;
-            case 2:
-                type = SLT;
-                break;
-            case 3:
-                type = SLTU;
-                break;
-            case 4:
-                type = XOR;
-                break;
-            case 5:
-                type = func7 ? SRA : SRL;
-            case 6:
-                type = OR;
-                break;
-            case 7:
-                type = AND;
-                break;
-            }
-            basictype = R;
+            basic_type = R;
             break;
         }
         }
-        rs1 = seq >> 15 & 31;
-        rs2 = seq >> 20 & 31;
-        rd = seq >> 7 & 31;
-        switch (basictype) // calc imm
+
+        rs1 = inst_bytes >> 15 & 0x1f;
+        rs2 = inst_bytes >> 20 & 0x1f;
+        rd = inst_bytes >> 7 & 0x1f;
+
+        // calculate immediate
+        switch (basic_type)
         {
         case I:
-            imm = sext(seq >> 20, 11);
+            imm = sext(inst_bytes >> 20, 11);
             break;
         case S:
-            imm = sext((seq >> 7 & 31) + (seq >> 25 << 5), 11);
+            imm = sext((inst_bytes >> 7 & 0x1f) + (inst_bytes >> 25 << 5), 11);
             break;
         case B:
-            imm = sext((seq >> 8 << 1 & 31) + (seq >> 25 << 5 & 2047) + ((seq >> 7 & 1) << 11) + (seq >> 31 << 12), 12);
+            imm = sext((inst_bytes >> 8 << 1 & 0x1f) +
+                           (inst_bytes >> 25 << 5 & 0x7ff) +
+                           ((inst_bytes >> 7 & 1) << 11) +
+                           (inst_bytes >> 31 << 12),
+                       12);
             break;
         case U:
-            imm = seq >> 12 << 12;
+            imm = inst_bytes >> 12 << 12;
             break;
         case J:
-            imm = sext((seq >> 21 << 1 & 2047) + ((seq >> 20 & 1) << 11) + ((seq >> 12 & 255) << 12) + (seq >> 31 << 20), 20);
+            imm = sext((inst_bytes >> 21 << 1 & 0x7ff) +
+                           ((inst_bytes >> 20 & 0x1) << 11) +
+                           ((inst_bytes >> 12 & 0xff) << 12) +
+                           (inst_bytes >> 31 << 20),
+                       20);
             break;
         }
     }
-    // debug
-    Instructiontypes gettype()
-    {
-        return type;
-    }
+
+    InstructionTypes getType() const { return type; }
 };
-unsigned Instruction::instcnt = 0;
 
 #endif

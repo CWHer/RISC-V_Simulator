@@ -3,7 +3,7 @@
 
 int main()
 {
-    // freopen("out", "w", stdout);
+    // freopen("output.log", "w", stdout);
     Memory memory;
     memory.initMemory();
     // memory.printMemory();

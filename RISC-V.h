@@ -10,6 +10,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
+#include <map>
 
 // clang-format off
 enum BasicTypes
