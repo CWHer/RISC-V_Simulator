@@ -1,6 +1,5 @@
 *.exe
-in
-out
-ans
 
-./vscode
+.vscode/
+input.data
+output.log
