@@ -5,21 +5,29 @@
 
 class Counter2
 {
+    // clang-format off
+    enum States
+    {
+        ST, WT, WNT, SNT
+        // NOTE: Strongly / Weakly / Not take / Take
+    };
+    // clang-format on
+
 private:
     States state;
 
 public:
     Counter2() : state(WT) {}
-    // Counter2():state(SNT) {}
-    void update(int dir)
+
+    void update(int is_jumped)
     {
-        if (state == SNT && dir == 1)
+        if ((state == SNT && is_jumped == 1) ||
+            (state == ST && is_jumped == -1))
             return;
-        if (state == ST && dir == -1)
-            return;
-        state = (States)((int)state + dir);
+        state = (States)((int)state + is_jumped);
     }
-    bool willJump()
+
+    bool predict()
     {
         switch (state)
         {
