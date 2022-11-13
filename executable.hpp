@@ -1,5 +1,5 @@
-#ifndef __EXECUTOR_HPP__
-#define __EXECUTOR_HPP__
+#ifndef __EXECUTABLE_HPP__
+#define __EXECUTABLE_HPP__
 
 #include "RISC-V.h"
 #include "instruction.hpp"
@@ -9,7 +9,7 @@
 // For the brevity of the code,
 //  I move Arithmetic Calculation, Memory Access,
 //  and Write Back into this abstract class.
-class ExecWarp
+class ExecWrapper
 {
     friend class ReorderBuffer;
     friend class ReservationStation;
@@ -21,8 +21,8 @@ private:
     unsigned memory_addr;
 
 public:
-    ExecWarp() : entry(), reg_result(0),
-                 pc_result(0), memory_addr(0) {}
+    ExecWrapper() : entry(), reg_result(0),
+                    pc_result(0), memory_addr(0) {}
 
     void init(ResEntry *entry)
     {

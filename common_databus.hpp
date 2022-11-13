@@ -12,7 +12,7 @@
 class CommonDataBus
 {
 private:
-    std::queue<ExecWarp *> inst_queue;
+    std::queue<ExecWrapper *> inst_queue;
 
 public:
     void push(SLUnit SLU) { inst_queue.push(SLU.executable); }
@@ -27,7 +27,7 @@ public:
     void broadcast(ReservationStation *res_station,
                    ReorderBuffer *reorder_buf)
     {
-        ExecWarp *executable = inst_queue.front();
+        ExecWrapper *executable = inst_queue.front();
         inst_queue.pop();
         res_station->broadcastOperand(executable->entry.dest,
                                       executable->reg_result);

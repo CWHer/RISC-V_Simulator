@@ -11,7 +11,7 @@ class SLUnit
 
 private:
     Memory *memory;
-    ExecWarp *executable;
+    ExecWrapper *executable;
     int busy_cycles;
 
 public:
@@ -21,7 +21,7 @@ public:
 
     void send(ResEntry *entry)
     {
-        executable = new ExecWarp();
+        executable = new ExecWrapper();
         executable->init(entry);
         busy_cycles = 0;
     }

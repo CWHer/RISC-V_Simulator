@@ -64,7 +64,7 @@ public:
         return &inst_queue.back();
     }
 
-    void update(ExecWarp *executable)
+    void update(ExecWrapper *executable)
     {
         executable->entry.dest->is_done = true;
     }
@@ -74,12 +74,12 @@ public:
     {
         // clang-format off
         auto getExec = [](const ROBEntry &entry) {
-            return reinterpret_cast<ExecWarp *>(entry.executable);
+            return reinterpret_cast<ExecWrapper *>(entry.executable);
         };
 
         ROBEntry entry = inst_queue.front();
         if (!entry.is_done) return false;
-        ExecWarp *executable = getExec(entry);
+        ExecWrapper *executable = getExec(entry);
         // clang-format on
 
         if (commited_inst == interrupt_index)

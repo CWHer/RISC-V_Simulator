@@ -9,7 +9,7 @@
 
 class ReservationStation
 {
-    friend class ExecWarp;
+    friend class ExecWrapper;
 
 private:
     RegisterFile *reg_file;
@@ -58,7 +58,7 @@ public:
             // HACK: only consider reg_result here
             // clang-format off
             auto getExec = [](ROBEntry *entry) {
-                return reinterpret_cast<ExecWarp *>(entry->executable);
+                return reinterpret_cast<ExecWrapper *>(entry->executable);
             };
             // clang-format on
             if (entry.Qj != nullptr && entry.Qj->is_done)

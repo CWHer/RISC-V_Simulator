@@ -9,7 +9,7 @@
 class Instruction
 {
     friend class Issue;
-    friend class ExecWarp;
+    friend class ExecWrapper;
     friend class ReservationStation;
     friend class ReorderBuffer;
 

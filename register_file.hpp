@@ -1,5 +1,5 @@
-#ifndef __REGISTER_HPP__
-#define __REGISTER_HPP__
+#ifndef __REGISTER_FILE_HPP__
+#define __REGISTER_FILE_HPP__
 
 #include "RISC-V.h"
 
