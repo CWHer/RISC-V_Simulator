@@ -3,7 +3,7 @@
 
 #include "RISC-V.h"
 #include "instruction.hpp"
-#include "register.hpp"
+#include "register_file.hpp"
 #include "memory.hpp"
 #include "reservation_station.hpp"
 #include "reorder_buffer.hpp"
@@ -23,18 +23,19 @@ public:
         : memory(mem), reg_file(reg_file),
           predictor(predictor), is_done(false) {}
 
-    bool issueInst(ReservationStation *res, ReorderBuffer *rob)
+    void issueInst(ReservationStation *res, ReorderBuffer *rob)
     {
         Instruction inst;
         if (!inst.fetch(memory, reg_file))
         {
             is_done = true;
-            return false;
+            return;
         }
         inst.decode();
 
-        if (rob->full() || res->full(inst.type))
-            return true;
+        // clang-format off
+        if (rob->full() || res->isFull(inst.type)) return;
+        // clang-format on
 
         // NOTE: branch prediction
         if (inst.type != JALR &&
@@ -49,9 +50,11 @@ public:
         else
             reg_file->nextPC();
 
-        res->push(inst);
-        rob->push(inst);
-        return false;
+        auto dest = rob->push(inst);
+        res->push(inst, dest);
+        if (isMemoryInst(inst.type) != MEM_STORE &&
+            isJumpInst(inst.type) != CONDITIONAL_JUMP)
+            reg_file->setDep(inst.rd, dest);
     }
 
     void reset() { is_done = false; }

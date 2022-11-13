@@ -9,117 +9,80 @@
 #include <cstring>
 #include <iostream>
 #include <iomanip>
+#include <cassert>
 
-enum States
+// clang-format off
+enum BasicTypes
 {
-    ST,
-    WT,
-    WNT,
-    SNT
-}; // S:strongly    W:weakly    N:not   T:take
-enum Basictypes
-{
-    R,
-    I,
-    S,
-    B,
-    U,
-    J
+    R, I, S, B, U, J
 };
-enum Instructiontypes
+
+enum InstructionTypes
 {
-    LUI,
-    AUIPC,
-    JAL,
-    JALR,
-    BEQ,
-    BNE,
-    BLT,
-    BGE,
-    BLTU,
-    BGEU,
-    LB,
-    LH,
-    LW,
-    LBU,
-    LHU,
-    SB,
-    SH,
-    SW,
-    ADDI,
-    SLTI,
-    SLTIU,
-    XORI,
-    ORI,
-    ANDI,
-    SLLI,
-    SRLI,
-    SRAI,
-    ADD,
-    SUB,
-    SLL,
-    SLT,
-    SLTU,
-    XOR,
-    SRL,
-    SRA,
-    OR,
-    AND,
+    LUI, AUIPC, JAL, JALR,
+    BEQ, BNE, BLT, BGE, BLTU, BGEU,
+    LB, LH, LW, LBU, LHU, SB, SH, SW,
+    ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI, 
+    ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
     EMPTY
 };
-struct Resnode // node in res station
+// clang-format on
+
+// entry in ROB
+struct ROBEntry
 {
-    unsigned rd;
-    unsigned num; // fetch timestamp
-    unsigned pc;  // pc location
-    Instructiontypes Op;
-    Resnode *Qj, *Qk;
-    unsigned Vj, Vk; // operand value
-    unsigned A;      // addr
-    bool isBusy;     // indicate whether it's in unit, unlike what in CAAQA
-    Resnode()
+    unsigned dest_reg;
+    unsigned inst_addr;
+    InstructionTypes inst_type;
+    bool is_done;
+    // pointer to the corresponding Executable
+    void *executable;
+    ROBEntry() : dest_reg(0), inst_type(EMPTY),
+                 is_done(false), executable(nullptr) {}
+};
+
+// entry in reservation station
+struct ResEntry // node in res station
+{
+    ROBEntry *dest;
+    unsigned inst_addr;
+    InstructionTypes inst_type;
+    unsigned Vj, Vk;
+    ROBEntry *Qj, *Qk;
+    unsigned imm;
+
+    ResEntry() : dest(nullptr), inst_addr(0), inst_type(EMPTY),
+                 Vj(0), Vk(0), Qj(nullptr), Qk(nullptr), imm(0) {}
+
+    bool operator==(const ResEntry &rhs) const
     {
-        Op = EMPTY;
-        Qj = Qk = NULL;
-        Vj = Vk = A = isBusy = 0;
-    }
-    void reset()
-    {
-        rd = num = pc = 0;
-        Op = EMPTY;
-        Qj = Qk = NULL;
-        Vj = Vk = A = isBusy = 0;
+        return inst_addr == rhs.inst_addr && inst_type == rhs.inst_type;
     }
 };
-// struct ROBnode  //node in ROB
-// {
-//     Resnode opt;
-//     unsigned temp_result,temp_resultpc;
-//     bool isReady;
-//     ROBnode()
-//     {
-//         temp_result=0;
-//         temp_resultpc=0;
-//         isReady=0;
-//     }
-// };
-const char *str[] =
-    {
-        "LUI", "AUIPC", "JAL", "JALR",
-        "BEQ", "BNE", "BLT", "BGE", "BLTU", "BGEU",
-        "LB", "LH", "LW", "LBU", "LHU", "SB", "SH", "SW",
-        "ADDI", "SLTI", "SLTIU", "XORI", "ORI", "ANDI",
-        "SLLI", "SRLI", "SRAI",
-        "ADD", "SUB", "SLL", "SLT", "SLTU", "XOR", "SRL", "SRA", "OR", "AND",
-        "EMPTY"};
+
+const char *INST_STRING[] = {
+    "LUI", "AUIPC", "JAL", "JALR",
+    "BEQ", "BNE", "BLT", "BGE", "BLTU", "BGEU",
+    "LB", "LH", "LW", "LBU", "LHU", "SB", "SH", "SW",
+    "ADDI", "SLTI", "SLTIU", "XORI", "ORI", "ANDI", "SLLI", "SRLI", "SRAI",
+    "ADD", "SUB", "SLL", "SLT", "SLTU", "XOR", "SRL", "SRA", "OR", "AND",
+    "EMPTY"};
+
+// utils
 unsigned sext(unsigned x, int n) // sign-extend
 {
     return (x >> n) & 1 ? x | 0xffffffff >> n << n : x;
 }
-unsigned setlow0(unsigned x) { return (x | 1) ^ 1; }
-int isJump(Instructiontypes type)
+
+enum JumpTypes
 {
-    int ret = 0;
+    NOT_JUMP,
+    CONDITIONAL_JUMP,
+    UNCONDITIONAL_JUMP
+};
+
+JumpTypes isJumpInst(InstructionTypes type)
+{
     switch (type)
     {
     case BEQ:
@@ -128,18 +91,24 @@ int isJump(Instructiontypes type)
     case BGE:
     case BLTU:
     case BGEU:
-        ret = 1;
-        break;
+        return CONDITIONAL_JUMP;
     case JAL:
     case JALR:
-        ret = 2;
-        break;
+        return UNCONDITIONAL_JUMP;
+    default:
+        return NOT_JUMP;
     }
-    return ret;
 }
-int isSL(Instructiontypes type)
+
+enum MemTypes
 {
-    int ret = 0;
+    NOT_MEM,
+    MEM_LOAD,
+    MEM_STORE
+};
+
+MemTypes isMemoryInst(InstructionTypes type)
+{
     switch (type)
     {
     case LB:
@@ -147,15 +116,14 @@ int isSL(Instructiontypes type)
     case LW:
     case LBU:
     case LHU:
-        ret = 1;
-        break;
+        return MEM_LOAD;
     case SB:
     case SH:
     case SW:
-        ret = 2;
-        break;
+        return MEM_STORE;
+    default:
+        return NOT_MEM;
     }
-    return ret;
 }
 
 #endif

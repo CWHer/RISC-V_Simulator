@@ -7,7 +7,7 @@ class Memory
 {
 private:
     static const int MAX_N = 1 << 20;
-    unsigned storage[MAX_N];
+    std::vector<unsigned> storage;
     char bytes_buf[20];
 
     char getChar()
@@ -32,10 +32,9 @@ private:
     }
 
 public:
-    Memory(const char *fname = "input.data")
+    Memory(const char *fname = "input.data") : storage(MAX_N)
     {
         freopen(fname, "r", stdin);
-        std::memset(storage, 0, sizeof(storage));
         std::memset(bytes_buf, 0, sizeof(bytes_buf));
     }
 
@@ -50,7 +49,7 @@ public:
             if (current_char == '@')
             {
                 // address
-                static const unsigned ADDR_LEN = 8;
+                static const int ADDR_LEN = 8;
                 for (auto i = 0; i < ADDR_LEN; ++i)
                     bytes_buf[i] = getChar();
                 current_addr = Bytes2Int(ADDR_LEN);

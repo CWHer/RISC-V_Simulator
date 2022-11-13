@@ -8,17 +8,18 @@
 class PatternHistoryTable
 {
 private:
-    static const int N_BITS = 6;
+    static const int N_BITS = 10;
     // assign a 2 bit counter to each address
     Counter2 buf[1 << N_BITS];
     int total_predict;
 
     unsigned hashAddr(unsigned addr)
     {
-        static const unsigned HIGH_OFFSET = 8;
-        static const unsigned HIGH_MASK = 0x7 << HIGH_OFFSET;
-        static const unsigned LOW_MASK = 0x7;
-        unsigned hash_value = (addr & HIGH_MASK) >> HIGH_OFFSET + (addr & LOW_MASK);
+        static const unsigned HIGH_OFFSET = 5;
+        static const unsigned CONCAT_OFFSET = HIGH_OFFSET - 5;
+        static const unsigned HIGH_MASK = 0x1f << HIGH_OFFSET;
+        static const unsigned LOW_MASK = 0x1f;
+        unsigned hash_value = ((addr & HIGH_MASK) >> CONCAT_OFFSET) + (addr & LOW_MASK);
         assert(hash_value < (1 << N_BITS));
         return hash_value;
     }

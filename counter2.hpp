@@ -33,10 +33,10 @@ public:
         {
         case ST:
         case WT:
-            return 1;
+            return true;
         case WNT:
         case SNT:
-            return 0;
+            return false;
         }
     }
 };

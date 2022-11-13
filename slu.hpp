@@ -2,7 +2,7 @@
 #define __SLU_HPP__
 
 #include "RISC-V.h"
-#include "executor.hpp"
+#include "executable.hpp"
 #include "memory.hpp"
 
 class SLUnit
@@ -10,44 +10,50 @@ class SLUnit
     friend class CommonDataBus;
 
 private:
-    Memory *mem;
-    Executor exe;
-    int wait_clk;
+    Memory *memory;
+    ExecWarp *executable;
+    int busy_cycles;
 
 public:
-    SLUnit(Memory *_mem) : mem(_mem), wait_clk(0) {}
-    void init(Resnode *_opt)
+    SLUnit(Memory *mem)
+        : memory(mem), executable(nullptr),
+          busy_cycles(0) {}
+
+    void send(ResEntry *entry)
     {
-        exe.init(_opt);
-        wait_clk = 0;
+        executable = new ExecWarp();
+        executable->init(entry);
+        busy_cycles = 0;
     }
+
     void reset()
     {
-        exe.reset();
-        wait_clk = 0;
+        executable = nullptr;
+        busy_cycles = 0;
     }
-    void putwclk(int clk)
-    {
-        wait_clk += clk;
-    }
-    bool isLock()
-    {
-        return wait_clk > 0;
-    }
+
+    void start(int cycles) { busy_cycles = cycles; }
+
+    bool isBusy() { return busy_cycles > 0; }
+
     void run()
     {
-        if (wait_clk > 0)
-        {
-            --wait_clk;
-            if (wait_clk > 0)
-                return;
-        }
-        exe.run();
-        exe.memory_access(mem);
+        if (--busy_cycles > 0)
+            return;
+        executable->exec();
+        executable->memoryAccess(memory);
     }
+
     bool empty()
     {
-        return exe.gettype() == EMPTY;
+        return executable == nullptr;
+    }
+
+    void printEntry()
+    {
+        if (!empty())
+            std::cout << "SLU: "
+                      << INST_STRING[executable->getType()] << std::endl;
     }
 };
 

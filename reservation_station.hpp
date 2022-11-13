@@ -2,114 +2,150 @@
 #define __RESERVATION_STATION_HPP__
 
 #include "RISC-V.h"
-#include "register.hpp"
+#include "register_file.hpp"
 #include "instruction.hpp"
 #include "alu.hpp"
 #include "slu.hpp"
 
 class ReservationStation
 {
-    friend class Executor;
+    friend class ExecWarp;
 
 private:
-    Register *reg;
-    static const unsigned SLN = 2;
-    static const unsigned ALN = 2;
-    std::deque<Resnode> SLres, ALres;
+    RegisterFile *reg_file;
+    static const unsigned MAX_SL_RES = 2;
+    static const unsigned MAX_AL_RES = 2;
+    std::deque<ResEntry> SLU_res, ALU_res;
 
 public:
-    ReservationStation(Register *_reg) : reg(_reg) {}
-    bool full(Instructiontypes type)
+    ReservationStation(RegisterFile *reg_file) : reg_file(reg_file) {}
+
+    bool isFull(InstructionTypes type)
     {
-        return isSL(type) ? SLres.size() == SLN : ALres.size() == ALN;
+        return isMemoryInst(type) != NOT_MEM
+                   ? SLU_res.size() == MAX_SL_RES
+                   : ALU_res.size() == MAX_AL_RES;
     }
+
     void reset()
     {
-        SLres.clear();
-        ALres.clear();
+        SLU_res.clear();
+        ALU_res.clear();
     }
-    void push(Instruction opt)
+
+    void push(Instruction inst, ROBEntry *dest)
     {
-        Resnode t;
-        t.num = opt.num, t.pc = opt.pc;
-        t.Op = opt.type, t.rd = opt.rd;
-        // notice:not all inst has 2 rs
-        if (opt.basictype != U && opt.basictype != J)
+        ResEntry entry;
+        entry.dest = dest;
+        entry.inst_addr = inst.addr;
+        entry.inst_type = inst.type;
+
+        // NOTE: NOT all inst has 2 rs
+        if (inst.basic_type != U && inst.basic_type != J)
         {
-            std::pair<unsigned, Resnode *> data;
-            data = reg->getdata(opt.rs1);
-            t.Vj = data.first, t.Qj = data.second;
-            if (opt.basictype != I)
+            std::pair<unsigned, ROBEntry *> operand;
+            operand = reg_file->readReg(inst.rs1);
+            entry.Vj = operand.first, entry.Qj = operand.second;
+            if (inst.basic_type != I)
             {
-                data = reg->getdata(opt.rs2);
-                t.Vk = data.first, t.Qk = data.second;
+                operand = reg_file->readReg(inst.rs2);
+                entry.Vk = operand.first, entry.Qk = operand.second;
             }
             else
-                t.Vk = opt.rs2; // shamt in I-type
+                entry.Vk = inst.rs2; // shamt in I-type
+
+            // NOTE: read result from ROB
+            // HACK: only consider reg_result here
+            // clang-format off
+            auto getExec = [](ROBEntry *entry) {
+                return reinterpret_cast<ExecWarp *>(entry->executable);
+            };
+            // clang-format on
+            if (entry.Qj != nullptr && entry.Qj->is_done)
+            {
+                entry.Vj = getExec(entry.Qj)->reg_result;
+                entry.Qj = nullptr;
+            }
+            if (entry.Qk != nullptr && entry.Qk->is_done)
+            {
+                entry.Vk = getExec(entry.Qk)->reg_result;
+                entry.Qk = nullptr;
+            }
         }
-        t.A = opt.imm, t.isBusy = 0;
-        if (isSL(opt.type))
-            SLres.push_back(t);
-        else
-            ALres.push_back(t);
-        if (isSL(t.Op) != 2 && isJump(t.Op) != 1) // JAL also modify reg
-            reg->setQi(t.rd, isSL(t.Op) ? &SLres.back() : &ALres.back());
+        entry.imm = inst.imm;
+        isMemoryInst(inst.type) != NOT_MEM
+            ? SLU_res.push_back(entry)
+            : ALU_res.push_back(entry);
     }
-    void remove(Resnode *ptr)
+
+    void remove(ResEntry entry)
     {
-        std::deque<Resnode>::iterator it;
-        if (isSL(ptr->Op))
+        auto res_station = isMemoryInst(entry.inst_type) != NOT_MEM ? &SLU_res : &ALU_res;
+        res_station->erase(std::find(res_station->begin(), res_station->end(), entry));
+    }
+
+    void broadcastOperand(ROBEntry *rob_entry, unsigned val)
+    {
+        for (auto &entry : SLU_res)
         {
-            it = SLres.begin();
-            while (&(*it) != ptr)
-                ++it;
-            SLres.erase(it);
+            if (entry.Qj == rob_entry)
+                entry.Qj = nullptr, entry.Vj = val;
+            if (entry.Qk == rob_entry)
+                entry.Qk = nullptr, entry.Vk = val;
         }
-        else
+
+        for (auto &entry : ALU_res)
         {
-            it = ALres.begin();
-            while (&(*it) != ptr)
-                ++it;
-            ALres.erase(it);
+            if (entry.Qj == rob_entry)
+                entry.Qj = nullptr, entry.Vj = val;
+            if (entry.Qk == rob_entry)
+                entry.Qk = nullptr, entry.Vk = val;
         }
     }
-    void update(Resnode *opt, unsigned val) // update by opt
+
+    void sendReadyEntry(ALUnit *alu, SLUnit *slu)
     {
-        std::deque<Resnode>::iterator it;
-        for (it = SLres.begin(); it != SLres.end(); ++it)
-        {
-            if (it->Qj == opt)
-                it->Qj = NULL, it->Vj = val;
-            if (it->Qk == opt)
-                it->Qk = NULL, it->Vk = val;
-        }
-        for (it = ALres.begin(); it != ALres.end(); ++it)
-        {
-            if (it->Qj == opt)
-                it->Qj = NULL, it->Vj = val;
-            if (it->Qk == opt)
-                it->Qk = NULL, it->Vk = val;
-        }
-    }
-    void check(ALUnit *ALU, SLUnit *SLU) // when V ready goto unit
-    {
-        std::deque<Resnode>::iterator it;
-        for (it = SLres.begin(); it != SLres.end(); ++it)
-            if (it->Qj == NULL && it->Qk == NULL)
-                if (!it->isBusy && !SLU->isLock())
+        static const int SLU_CYCLE = 3, ALU_CYCLE = 1;
+
+        if (!slu->isBusy())
+            for (auto &entry : SLU_res)
+                if (entry.Qj == nullptr && entry.Qk == nullptr)
                 {
-                    SLU->init(&(*it));
-                    SLU->putwclk(3);
-                    it->isBusy = 1;
+                    slu->send(&entry);
+                    slu->start(SLU_CYCLE);
+                    this->remove(entry);
+                    break;
                 }
-        for (it = ALres.begin(); it != ALres.end(); ++it)
-            if (it->Qj == NULL && it->Qk == NULL)
-                if (!it->isBusy && !ALU->isLock())
-                {
-                    ALU->init(&(*it));
-                    ALU->putwclk(1);
-                    it->isBusy = 1;
-                }
+
+        if (!alu->isBusy())
+            for (auto &entry : ALU_res)
+                if (entry.Qj == nullptr && entry.Qk == nullptr)
+                    if (!alu->isBusy())
+                    {
+                        alu->send(&entry);
+                        alu->start(ALU_CYCLE);
+                        this->remove(entry);
+                        break;
+                    }
+    }
+
+    void printEntry()
+    {
+        std::cout << "SLU Reservation: " << std::endl;
+        for (auto &entry : SLU_res)
+            std::cout << "Inst addr: " << entry.inst_addr
+                      << ", Inst type: " << INST_STRING[entry.inst_type]
+                      << ", Vj: " << entry.Vj << ", Qj: " << entry.Qj
+                      << ", Vk: " << entry.Vk << ", Qk: " << entry.Qk << '\n';
+        std::cout << std::endl;
+
+        std::cout << "ALU Reservation: " << std::endl;
+        for (auto &entry : ALU_res)
+            std::cout << "Inst addr: " << entry.inst_addr
+                      << ", Inst type: " << INST_STRING[entry.inst_type]
+                      << ", Vj: " << entry.Vj << ", Qj: " << entry.Qj
+                      << ", Vk: " << entry.Vk << ", Qk: " << entry.Qk << '\n';
+        std::cout << std::endl;
     }
 };
 

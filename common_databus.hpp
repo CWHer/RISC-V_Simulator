@@ -2,8 +2,8 @@
 #define __COMMON_DATABUS_HPP__
 
 #include "RISC-V.h"
-#include "executor.hpp"
-#include "register.hpp"
+#include "executable.hpp"
+#include "register_file.hpp"
 #include "reservation_station.hpp"
 #include "alu.hpp"
 #include "slu.hpp"
@@ -12,60 +12,31 @@
 class CommonDataBus
 {
 private:
-    Register *reg;
-    struct cmp
-    {
-        bool operator()(const Executor &a, const Executor &b)
-        {
-            return a.opt.num > b.opt.num;
-        }
-    };
-    std::priority_queue<Executor, std::vector<Executor>, cmp> Q;
+    std::queue<ExecWarp *> inst_queue;
 
 public:
-    CommonDataBus(Register *_reg) : reg(_reg) {}
-    bool isReady(ReorderBuffer *ROB)
-    {
-        if (ROB->empty())
-            return 1;
-        std::deque<Executor>::iterator it;
-        for (it = ROB->Q.begin(); it->opt.num != Q.top().opt.num; ++it)
-            if (!it->isReady)
-                return 0;
-        return 1;
-    }
-    void push(SLUnit SLU)
-    {
-        Q.push(SLU.exe);
-    }
-    void push(ALUnit ALU)
-    {
-        Q.push(ALU.exe);
-    }
+    void push(SLUnit SLU) { inst_queue.push(SLU.executable); }
+    void push(ALUnit ALU) { inst_queue.push(ALU.executable); }
+
     void reset()
     {
-        while (!Q.empty())
-            Q.pop();
+        while (!inst_queue.empty())
+            inst_queue.pop();
     }
-    void run(ReservationStation *res, ReorderBuffer *ROB)
+
+    void broadcast(ReservationStation *res_station,
+                   ReorderBuffer *reorder_buf)
     {
-        Executor exe = Q.top();
-        exe.isReady = 1;
-        Q.pop();
-        res->update(exe.ptr, exe.temp_result); // upd res
-        if (reg->getQi(exe.opt.rd) == exe.ptr) // upd reg
-            reg->setQi(exe.opt.rd, NULL);
-        res->remove(exe.ptr); // remove ptr in res
-        ROB->update(exe);
+        ExecWarp *executable = inst_queue.front();
+        inst_queue.pop();
+        res_station->broadcastOperand(executable->entry.dest,
+                                      executable->reg_result);
+        reorder_buf->update(executable);
     }
+
     bool empty()
     {
-        return Q.empty();
-    }
-    // debug
-    unsigned size()
-    {
-        return Q.size();
+        return inst_queue.empty();
     }
 };
 

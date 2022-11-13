@@ -21,7 +21,13 @@ public:
 
     void write(unsigned pos, unsigned val)
     {
-        storage[pos] = val;
+        if (pos != 0)
+            storage[pos] = val;
+    }
+
+    std::pair<unsigned, ROBEntry *> readReg(unsigned pos)
+    {
+        return std::make_pair(storage[pos], entry_ptr[pos]);
     }
 
     // dependency utils
@@ -32,8 +38,9 @@ public:
 
     void setDep(unsigned pos, ROBEntry *ptr)
     {
-        assert(pos > 0 && pos < N_REG);
-        entry_ptr[pos] = ptr;
+        assert(pos >= 0 && pos < N_REG);
+        if (pos > 0)
+            entry_ptr[pos] = ptr;
     }
 
     ROBEntry *getDep(unsigned pos)
@@ -41,7 +48,9 @@ public:
         return entry_ptr[pos];
     }
 
-    unsigned setPC(unsigned val)
+    unsigned getPC() { return program_counter; }
+
+    void setPC(unsigned val)
     {
         program_counter = val;
     }
@@ -60,8 +69,10 @@ public:
 
     void printRegfile()
     {
+        std::cout << "Register File:" << std::dec << std::endl;
         for (int i = 0; i < N_REG; ++i)
-            std::cout << "reg[" << i << "] = " << storage[i] << '\n';
+            std::cout << "reg[" << i << "] = " << storage[i]
+                      << ", Dep: " << entry_ptr[i] << '\n';
         std::cout << std::endl;
     }
 };
