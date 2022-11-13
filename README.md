@@ -1,176 +1,69 @@
 # RISC-V Simulator OoOE
 
-**out-of-order execution** ~~OoO~~
+## Description
 
-> 在指令issue之后就不存在顺序了
+Out-of-order execution simulator
 
-`TODOs`
+- [x] Tomasulo Algorithm
+- [x] Reorder Buffer
 
-- [x] Tomasulo
-- [x] ROB
-- [x] Precise interruption
 
-### 目前版本
 
-Ver1.2
+**Vanilla Tomasulo Algorithm Architecture**
 
-- 流程图
+NOTE: CAN NOT tackle WAW & WAR hazards of memory access instructions
 
-  无法解决访问存储器的WAW/WAR hazard
+HACK: stall the whole process when there is a memory write instruction (or JALR)
 
-![](assets/proc1.png)
+![](assets/vanilla_tomasulo.png)
 
-- 流程图（with ROB）
 
-  顺序发射，乱序执行，顺序提交
 
-![](assets/proc2.png)
+**Tomasulo Algorithm with Reorder Buffer**
 
-- 分支目标缓冲区
+NOTE: sequential issue, out-of-order execute, and sequential commit
 
-  效果似乎相当于一个一位的饱和计数器
+![](assets/tomasulo_ROB.png)
 
-  但有buf的话运行起来比计数器快一些
 
-![](assets/prdbuf.png)
 
-- 基础类
+**Modules**
 
-```mermaid
-graph TD;
-	A[Instruction]-->fecth;
-	A-->decode;
-	B[Memory]-->B1[init read];
-	B-->load;
-	B-->store;
-```
+- `Instruction Issue`
 
-```mermaid
-graph TD;
-	C[Register]-->data;
-	C-->pc;
-	C-->output;
-	D[Executor]-->D1[run/execute];
-	D-->D2[memory access];
-	D-->D3[write back];
-```
+  Load instructions, and send into `Reservation Station` and `Reorder Buffer`
 
-```mermaid
-graph TD;
-	C[Predictor]-->push;
-	C-->update;
-	C-->willJump;
-	C-->counter2
-```
+- `RReservation Staion`
 
+  Reserve instructions until they are ready to execute
 
+- `ALU&SLU`
 
-- 主要模块
+  Execute instructions
 
-  - `Issue`
+- `Common Data But`
 
-    读取指令，传入Res station，预传入ROB(not ready)
+  Broadcast results to `Reservation Station`, and send into `Reorder Buffer`
 
-  - `Res staion`
+- `Reorder Buffer`
 
-    暂存指令，等待operand出现在CDB后，再将指令传入unit
+  Commit instructions in order. If branch misprediction, flush instructions in all modules.
 
-  - `ALU&SLU`
 
-    执行单元，其中ALU 1 clk，SLU 3 clk，可以带锁
 
-    执行完传入CDB
+## Toy Results
 
-  - `CDB`
+Assume: `MAX ROB Size = 10`, `MAX_SL_Res = 2`, `MAX_AL_Res = 2`, `NUM_ISSUE_PER = 4`, `ALU Cycle = 1`, `SLU Cycle = 3`
 
-    同一时刻根据指令读取先后进行广播，广播后传入ROB(ready)
-
-  - `ROB`
-
-    重新恢复顺序
-
-    根据指令读取顺序commit
-
-    如果预测错误则会refresh所有模块(精准中断)
-
-
-
-### Ver 1.0
-
-Idea
-
-- 执行器分为SLU、ALU，分别为3clk、1clk
-- CDB用了priority_queue
-- Res station&ROB用了deque
-- 单发
-- 多次提交
-
-Notice
-
-- ~~遇到了书上没讲的一个bug？~~
-
-  CDB->ROB 会解除reg里Qi
-
-  但如果该指令修改了reg，无法及时commit
-
-  下一条指令用的还是旧的reg....
-
-- 不是很清楚该如何设置时钟周期....
-
-  每个操作的涵盖了5 stage里好的几个阶段
-
-- ~~分支预测的正确率较低~~，原因如下：(其实是我写个了bug，忽略掉这一条，但确实有一定影响)
-
-  只有在commit阶段才会反馈预测器，但是这时候可能已经预测了后续的一些branch inst
-
-  反馈具有延迟性，无法及时更新预测器
-
-- 如果按照循环计算clk的话，这个版本比parallel的确快很多，尽管预测正确率很低
-
-- 遇到store inst&JALR，会暂停到这些指令commit完成
-
-### Ver 1.1
-
-Feature
-
-- 多发(大概是)
-
-Fix
-
-- reg[0]有Qi后从ROB写入的bug
-- refresh后没有重置IS.isEmpty
-
-### Ver 1.2
-
-Feature
-
-- 简易的精准中断api
-
-  setStopNum设置中断指令序号
-
-Fix
-
-- predictor反馈过程中的一个bug（~~在重构分支预测的时候发现正确率不会改变~~）
-
-  转跳方式不同于pipeline的差量
-
-  沿用的时候忽略了这个细节，导致一直判定为jump
-
-**运行结果**
-
-既然正确率还行，就不采用分支目标缓冲区了
-
-Notice: clock cycle的计算可能不准确
-
-|           | 时钟周期  |                   |        |
-| --------- | --------- | ----------------- | ------ |
-| basicopt  | 540023    | 143523/155139     | 92.51% |
-| bulgarian | 392672    | 64540/71493       | 90.27% |
-| hanoi     | 229873    | 14882/17457       | 85.25% |
-| magic     | 741940    | 46004/67869       | 67.78% |
-| qsort     | 1459260   | 178825/200045     | 89.39% |
-| queens    | 648341    | 60244/77116       | 78.12% |
-| superloop | 511915    | 380927/435027     | 87.56% |
-| tak       | 2611094   | 48167/60639       | 79.43% |
-| pi        | 102689771 | 33483615/39956380 | 83.80% |
+| Test Case | Total Cycles | Branch Prediction | Accuracy |
+| --------- | ------------ | ----------------- | -------- |
+| basicopt  | 530016       | 127835/155139     | 82.40%   |
+| bulgarian | 357350       | 67509/71493       | 94.42%   |
+| hanoi     | 233958       | 10664/17457       | 61.08%   |
+| magic     | 735320       | 53215/67869       | 78.40%   |
+| qsort     | 1223022      | 174888/200045     | 87.42%   |
+| queens    | 629673       | 56576/77116       | 73.36%   |
+| superloop | 511907       | 408131/435027     | 93.82%   |
+| tak       | 2613968      | 44754/60639       | 73.80%   |
+| pi        | 102689773    | 32925339/39956380 | 82.40%   |
 
