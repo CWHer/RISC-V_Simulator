@@ -12,53 +12,51 @@
 class Issue
 {
 private:
-    Memory *mem;
-    Register *reg;
-    Predictor *prd;
-    bool isEmpty;
+    Memory *memory;
+    RegisterFile *reg_file;
+    PatternHistoryTable *predictor;
+    bool is_done;
 
 public:
-    Issue(Memory *_mem, Register *_reg, Predictor *_prd)
-        : mem(_mem), reg(_reg), prd(_prd), isEmpty(0) {}
-    bool run(ReservationStation *res, ReorderBuffer *ROB)
-    { // if res&ROB not full && no JALR & S-type in ROB
-        Instruction opt;
-        if (opt.fetch(mem, reg))
+    Issue(Memory *mem, RegisterFile *reg_file,
+          PatternHistoryTable *predictor)
+        : memory(mem), reg_file(reg_file),
+          predictor(predictor), is_done(false) {}
+
+    bool issueInst(ReservationStation *res, ReorderBuffer *rob)
+    {
+        Instruction inst;
+        if (!inst.fetch(memory, reg_file))
         {
-            isEmpty = 1;
-            opt.reset();
-            return 0;
+            is_done = true;
+            return false;
         }
-        opt.decode();
-        if (ROB->full() || res->full(opt.type))
-            return 1;
-        opt.num = ++opt.instcnt;
-        if (isJump(opt.type) && opt.type != JALR)
+        inst.decode();
+
+        if (rob->full() || res->full(inst.type))
+            return true;
+
+        // NOTE: branch prediction
+        if (inst.type != JALR &&
+            isJumpInst(inst.type) != NOT_JUMP)
         {
-            if (isJump(opt.type) == 1)
-            {
-                if (prd->willJump(opt.type))
-                    reg->getpc() = opt.imm + opt.pc;
-                else
-                    reg->nextpc();
-            }
-            else // JAL
-                reg->getpc() = opt.imm + opt.pc;
+            if (inst.type == JAL ||
+                predictor->predict(inst.addr))
+                reg_file->setPC(inst.addr + inst.imm);
+            else
+                reg_file->nextPC();
         }
         else
-            reg->nextpc();
-        res->push(opt);
-        ROB->push(opt);
-        return 0;
+            reg_file->nextPC();
+
+        res->push(inst);
+        rob->push(inst);
+        return false;
     }
-    void reset()
-    {
-        isEmpty = 0;
-    }
-    bool empty()
-    {
-        return isEmpty;
-    }
+
+    void reset() { is_done = false; }
+
+    bool isDone() { return is_done; }
 };
 
 #endif

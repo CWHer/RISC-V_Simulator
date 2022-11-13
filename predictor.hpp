@@ -15,10 +15,10 @@ private:
 
     unsigned hashAddr(unsigned addr)
     {
-        static const unsigned high_offset = 8;
-        static const unsigned high_mask = 0x7 << high_offset;
-        static const unsigned low_mask = 0x7;
-        unsigned hash_value = (addr & high_mask) >> high_offset + (addr & low_mask);
+        static const unsigned HIGH_OFFSET = 8;
+        static const unsigned HIGH_MASK = 0x7 << HIGH_OFFSET;
+        static const unsigned LOW_MASK = 0x7;
+        unsigned hash_value = (addr & HIGH_MASK) >> HIGH_OFFSET + (addr & LOW_MASK);
         assert(hash_value < (1 << N_BITS));
         return hash_value;
     }

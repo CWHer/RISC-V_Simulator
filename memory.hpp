@@ -21,12 +21,12 @@ private:
 
     unsigned Bytes2Int(int n_bytes = 2) // base 16
     {
-        static const unsigned hex_base = 16;
+        static const unsigned HEX_BASE = 16;
         unsigned ret = 0;
         for (int i = 0; i < n_bytes; ++i)
         {
             char ch = bytes_buf[i];
-            ret = ret * hex_base + (unsigned)(ch >= 'A' ? ch - 'A' + 10 : ch - '0');
+            ret = ret * HEX_BASE + (unsigned)(ch >= 'A' ? ch - 'A' + 10 : ch - '0');
         }
         return ret;
     }
@@ -50,10 +50,10 @@ public:
             if (current_char == '@')
             {
                 // address
-                static const unsigned addr_len = 8;
-                for (auto i = 0; i < addr_len; ++i)
+                static const unsigned ADDR_LEN = 8;
+                for (auto i = 0; i < ADDR_LEN; ++i)
                     bytes_buf[i] = getChar();
-                current_addr = Bytes2Int(addr_len);
+                current_addr = Bytes2Int(ADDR_LEN);
             }
             else
             {
@@ -79,23 +79,23 @@ public:
 
     void store(unsigned addr, unsigned bytes_value, int n_bytes)
     {
-        static const unsigned byte_mask = 0xff;
-        static const unsigned byte_offset = 8;
+        static const unsigned BYTE_MASK = 0xff;
+        static const unsigned BYTE_OFFSET = 8;
 
         for (int i = 0; i < n_bytes; ++i)
         {
-            storage[addr + i] = bytes_value & byte_mask;
-            bytes_value >>= 8;
+            storage[addr + i] = bytes_value & BYTE_MASK;
+            bytes_value >>= BYTE_OFFSET;
         }
     }
 
     unsigned load(unsigned addr, int n_bytes)
     {
-        static const unsigned byte_offset = 8;
+        static const unsigned BYTE_OFFSET = 8;
 
         unsigned ret = 0;
         for (int i = n_bytes - 1; i >= 0; --i)
-            ret = (ret << byte_offset) + storage[addr + i];
+            ret = (ret << BYTE_OFFSET) + storage[addr + i];
         return ret;
     }
 };
