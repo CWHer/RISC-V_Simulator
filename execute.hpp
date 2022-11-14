@@ -55,7 +55,7 @@ public:
             // clang-format off
             if (--wait_cycles > 0) return;
             // clang-format on
-            executable.exec(reg_file, forward_capsule);
+            executable.exec(forward_capsule);
             forward_capsule.reset();
         }
     }

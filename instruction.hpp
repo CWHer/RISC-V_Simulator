@@ -16,6 +16,7 @@ private:
     unsigned addr;
     unsigned inst_bytes;
     unsigned rs1, rs2, rd;
+    unsigned Vj, Vk;
     unsigned imm;
     BasicTypes basic_type;
     InstructionTypes type;
@@ -210,6 +211,56 @@ public:
         }
     }
 
+    void readReg(RegisterFile *reg_file)
+    {
+        switch (type)
+        {
+        case JALR:
+        // immediate instructions
+        case ADDI:
+        case SLTI:
+        case SLTIU:
+        case XORI:
+        case ORI:
+        case ANDI:
+        case SLLI:
+        case SRLI:
+        case SRAI:
+            Vj = reg_file->read(rs1);
+            break;
+        // branch (B type)
+        case BEQ:
+        case BNE:
+        case BLT:
+        case BGE:
+        case BLTU:
+        case BGEU:
+        // load & store instructions
+        case LB:
+        case LH:
+        case LW:
+        case LBU:
+        case LHU:
+        case SB:
+        case SH:
+        case SW:
+        // arithmetic and logic instructions
+        case ADD:
+        case SUB:
+        case SLL:
+        case SLT:
+        case SLTU:
+        case XOR:
+        case SRL:
+        case SRA:
+        case OR:
+        case AND:
+            Vj = reg_file->read(rs1);
+            Vk = reg_file->read(rs2);
+            break;
+        }
+    };
+    
     InstructionTypes getType() const { return type; }
 };
 

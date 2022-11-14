@@ -32,14 +32,14 @@ public:
 
     void reset() { inst.type = EMPTY; }
 
-    void exec(RegisterFile *reg_file, ForwardCapsule &capsule)
+    void exec(ForwardCapsule &capsule)
     {
-        auto readReg = [reg_file, &capsule](unsigned pos)
+        auto read = [&capsule](unsigned pos, unsigned value)
         {
             return (capsule.type != EMPTY &&
                     pos > 0 && pos == capsule.dest)
                        ? capsule.reg_result
-                       : reg_file->read(pos);
+                       : value;
         };
 
         static const int INST_LEN = 4;
@@ -64,37 +64,37 @@ public:
         case JALR: // (I type)
         {
             reg_result = inst.addr + INST_LEN;
-            pc_result = (readReg(inst.rs1) + imm) & ~1; // set low bit to 0
+            pc_result = (read(inst.rs1, inst.Vj) + imm) & ~1; // set low bit to 0
             break;
         }
         // branch (B type)
         case BEQ:
-            pc_result = (readReg(inst.rs1) == readReg(inst.rs2))
+            pc_result = (read(inst.rs1, inst.Vj) == read(inst.rs2, inst.Vk))
                             ? inst.addr + imm
                             : inst.addr + INST_LEN;
             break;
         case BNE:
-            pc_result = (readReg(inst.rs1) != readReg(inst.rs2))
+            pc_result = (read(inst.rs1, inst.Vj) != read(inst.rs2, inst.Vk))
                             ? inst.addr + imm
                             : inst.addr + INST_LEN;
             break;
         case BLT:
-            pc_result = ((int)readReg(inst.rs1) < (int)readReg(inst.rs2))
+            pc_result = ((int)read(inst.rs1, inst.Vj) < (int)read(inst.rs2, inst.Vk))
                             ? inst.addr + imm
                             : inst.addr + INST_LEN;
             break;
         case BGE:
-            pc_result = ((int)readReg(inst.rs1) >= (int)readReg(inst.rs2))
+            pc_result = ((int)read(inst.rs1, inst.Vj) >= (int)read(inst.rs2, inst.Vk))
                             ? inst.addr + imm
                             : inst.addr + INST_LEN;
             break;
         case BLTU:
-            pc_result = (readReg(inst.rs1) < readReg(inst.rs2))
+            pc_result = (read(inst.rs1, inst.Vj) < read(inst.rs2, inst.Vk))
                             ? inst.addr + imm
                             : inst.addr + INST_LEN;
             break;
         case BGEU:
-            pc_result = (readReg(inst.rs1) >= readReg(inst.rs2))
+            pc_result = (read(inst.rs1, inst.Vj) >= read(inst.rs2, inst.Vk))
                             ? inst.addr + imm
                             : inst.addr + INST_LEN;
             break;
@@ -107,67 +107,67 @@ public:
         case SB: // (S type)
         case SH:
         case SW:
-            memory_addr = readReg(inst.rs1) + imm;
-            memory_result = readReg(inst.rs2);
+            memory_addr = read(inst.rs1, inst.Vj) + imm;
+            memory_result = read(inst.rs2, inst.Vk);
             break;
         // arithmetic and logic instructions begin
         // I type
         case ADDI:
-            reg_result = readReg(inst.rs1) + imm;
+            reg_result = read(inst.rs1, inst.Vj) + imm;
             break;
         case SLTI:
-            reg_result = ((int)readReg(inst.rs1) < (int)imm);
+            reg_result = ((int)read(inst.rs1, inst.Vj) < (int)imm);
             break;
         case SLTIU:
-            reg_result = (readReg(inst.rs1) < imm);
+            reg_result = (read(inst.rs1, inst.Vj) < imm);
             break;
         case XORI:
-            reg_result = readReg(inst.rs1) ^ imm;
+            reg_result = read(inst.rs1, inst.Vj) ^ imm;
             break;
         case ORI:
-            reg_result = readReg(inst.rs1) | imm;
+            reg_result = read(inst.rs1, inst.Vj) | imm;
             break;
         case ANDI:
-            reg_result = readReg(inst.rs1) & imm;
+            reg_result = read(inst.rs1, inst.Vj) & imm;
             break;
         case SLLI:
-            reg_result = readReg(inst.rs1) << shamt;
+            reg_result = read(inst.rs1, inst.Vj) << shamt;
             break;
         case SRLI:
-            reg_result = readReg(inst.rs1) >> shamt;
+            reg_result = read(inst.rs1, inst.Vj) >> shamt;
             break;
         case SRAI:
-            reg_result = (readReg(inst.rs1) >> shamt) | (readReg(inst.rs1) >> 31 << 31);
+            reg_result = (read(inst.rs1, inst.Vj) >> shamt) | (read(inst.rs1, inst.Vj) >> 31 << 31);
             break;
         case ADD: // (B type)
-            reg_result = readReg(inst.rs1) + readReg(inst.rs2);
+            reg_result = read(inst.rs1, inst.Vj) + read(inst.rs2, inst.Vk);
             break;
         case SUB:
-            reg_result = readReg(inst.rs1) - readReg(inst.rs2);
+            reg_result = read(inst.rs1, inst.Vj) - read(inst.rs2, inst.Vk);
             break;
         case SLL:
-            reg_result = readReg(inst.rs1) << readReg(inst.rs2);
+            reg_result = read(inst.rs1, inst.Vj) << read(inst.rs2, inst.Vk);
             break;
         case SLT:
-            reg_result = ((int)readReg(inst.rs1) < (int)readReg(inst.rs2));
+            reg_result = ((int)read(inst.rs1, inst.Vj) < (int)read(inst.rs2, inst.Vk));
             break;
         case SLTU:
-            reg_result = (readReg(inst.rs1) < readReg(inst.rs2));
+            reg_result = (read(inst.rs1, inst.Vj) < read(inst.rs2, inst.Vk));
             break;
         case XOR:
-            reg_result = readReg(inst.rs1) ^ readReg(inst.rs2);
+            reg_result = read(inst.rs1, inst.Vj) ^ read(inst.rs2, inst.Vk);
             break;
         case SRL:
-            reg_result = readReg(inst.rs1) >> readReg(inst.rs2);
+            reg_result = read(inst.rs1, inst.Vj) >> read(inst.rs2, inst.Vk);
             break;
         case SRA:
-            reg_result = (readReg(inst.rs1) >> readReg(inst.rs2)) | (readReg(inst.rs1) >> 31 << 31);
+            reg_result = (read(inst.rs1, inst.Vj) >> read(inst.rs2, inst.Vk)) | (read(inst.rs1, inst.Vj) >> 31 << 31);
             break;
         case OR:
-            reg_result = readReg(inst.rs1) | readReg(inst.rs2);
+            reg_result = read(inst.rs1, inst.Vj) | read(inst.rs2, inst.Vk);
             break;
         case AND:
-            reg_result = readReg(inst.rs1) & readReg(inst.rs2);
+            reg_result = read(inst.rs1, inst.Vj) & read(inst.rs2, inst.Vk);
             break;
         }
     }

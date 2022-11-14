@@ -12,12 +12,15 @@ class InstructionDecode
     friend class Execute;
 
 private:
+    RegisterFile *reg_file;
+
     Instruction inst;
     bool is_done;
     int wait_cycles;
 
 public:
-    InstructionDecode() : is_done(false), wait_cycles(0) {}
+    InstructionDecode(RegisterFile *reg_file)
+        : reg_file(reg_file), is_done(false), wait_cycles(0) {}
 
     void reset()
     {
@@ -47,6 +50,7 @@ public:
             if (--wait_cycles > 0) return;
             // clang-format on
             inst.decode();
+            inst.readReg(reg_file);
         }
     }
 

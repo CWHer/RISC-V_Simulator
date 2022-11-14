@@ -95,7 +95,7 @@ private:
 public:
     Simulator(Memory *mem)
         : total_cycles(0), memory(mem),
-          IF(mem, &reg_file, &predictor), ID(),
+          IF(mem, &reg_file, &predictor), ID(&reg_file),
           EXE(&reg_file, &predictor), MEM(mem), WB(&reg_file) {}
 
     void setMode(Mode mode)
