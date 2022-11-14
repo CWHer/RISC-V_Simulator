@@ -107,8 +107,9 @@ public:
             // check branch prediction
             if (isJumpInst(executable->getType()) == CONDITIONAL_JUMP)
             {
+                static const int INST_LEN = 4;
                 bool is_jumped = executable->pc_result !=
-                                 executable->entry.inst_addr + 4;
+                                 executable->entry.inst_addr + INST_LEN;
                 predictor->update(entry.inst_addr, is_jumped ? -1 : 1);
             }
 

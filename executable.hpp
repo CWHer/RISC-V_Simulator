@@ -191,7 +191,8 @@ public:
         switch (entry.inst_type)
         {
         // jump
-        case JAL: // J type    //pc in JAL&B type were dealed in IS
+        // NOTE: HACK: pc is updated in Issue / ROB stages
+        case JAL: // J type
         {
             reg_file->write(dest_reg, reg_result);
             // reg_file->setPC(pc_result);
