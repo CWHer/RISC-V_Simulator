@@ -101,7 +101,7 @@ public:
         case 0b1100011:
         {
             // clang-format off
-            static const std::map<int, InstructionTypes> type_map = {
+            static const std::unordered_map<int, InstructionTypes> type_map = {
                 {0b000, BEQ}, {0b001, BNE}, {0b100, BLT}, {0b101, BGE}, {0b110, BLTU}, {0b111, BGEU}
             };
             // clang-format on
@@ -112,7 +112,7 @@ public:
         case 0b0000011:
         {
             // clang-format off
-            static const std::map<int, InstructionTypes> type_map = {
+            static const std::unordered_map<int, InstructionTypes> type_map = {
                 {0b000, LB}, {0b001, LH}, {0b010, LW}, {0b100, LBU}, {0b101, LHU}
             };
             // clang-format on
@@ -123,7 +123,7 @@ public:
         case 0b0100011:
         {
             // clang-format off
-            static const std::map<int, InstructionTypes> type_map = {
+            static const std::unordered_map<int, InstructionTypes> type_map = {
                 {0b000, SB}, {0b001, SH}, {0b010, SW}
             };
             // clang-format on
@@ -134,7 +134,7 @@ public:
         case 0b0010011:
         {
             // clang-format off
-            static const std::map<int, InstructionTypes> type_map = {
+            static const std::unordered_map<int, InstructionTypes> type_map = {
                 {0b000, ADDI}, {0b010, SLTI}, {0b011, SLTIU}, {0b100, XORI},
                 {0b110, ORI}, {0b111, ANDI}, {0b001, SLLI}
             };
@@ -155,7 +155,7 @@ public:
         case 0b0110011:
         {
             // clang-format off
-            static const std::map<int, InstructionTypes> type_map = {
+            static const std::unordered_map<int, InstructionTypes> type_map = {
                 {0b001, SLL}, {0b010, SLT}, {0b011, SLTU}, {0b100, XOR}, {0b110, OR}, {0b111, AND}
             };
             // clang-format on

@@ -6,8 +6,8 @@
 #include <cstring>
 #include <vector>
 #include <iomanip>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <cassert>
 
 // clang-format off
@@ -113,13 +113,47 @@ MemTypes isMemoryInst(InstructionTypes type)
 
 bool isRegDest(InstructionTypes type)
 {
-    std::set<InstructionTypes> reg_dest_types = {
-        LUI, AUIPC, JAL, JALR,
-        LB, LH, LW, LBU, LHU,
-        ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
-        ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND};
+    // std::unordered_set<InstructionTypes> reg_dest_types = {
+    //     LUI, AUIPC, JAL, JALR,
+    //     LB, LH, LW, LBU, LHU,
+    //     ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
+    //     ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND};
 
-    return reg_dest_types.count(type) > 0;
+    // HACK: for performance
+    switch (type)
+    {
+    case LUI:
+    case AUIPC:
+    case JAL:
+    case JALR:
+    case LB:
+    case LH:
+    case LW:
+    case LBU:
+    case LHU:
+    case ADDI:
+    case SLTI:
+    case SLTIU:
+    case XORI:
+    case ORI:
+    case ANDI:
+    case SLLI:
+    case SRLI:
+    case SRAI:
+    case ADD:
+    case SUB:
+    case SLL:
+    case SLT:
+    case SLTU:
+    case XOR:
+    case SRL:
+    case SRA:
+    case OR:
+    case AND:
+        return true;
+    default:
+        return false;
+    }
 }
 
 #endif

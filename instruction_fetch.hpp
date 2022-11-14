@@ -54,7 +54,8 @@ public:
 
     void putLock(int cycles)
     {
-        wait_cycles = cycles;
+        if (!is_done)
+            wait_cycles = cycles;
     }
 
     bool isDone()

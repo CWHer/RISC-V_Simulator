@@ -62,7 +62,8 @@ public:
 
     void putLock(int cycles)
     {
-        wait_cycles = cycles;
+        if (!is_done)
+            wait_cycles = cycles;
     }
 
     bool isLock()
@@ -77,6 +78,9 @@ public:
 
     bool checkBranchPred(unsigned next_pc)
     {
+        // clang-format off
+        if (isLock()) return false;
+        // clang-format on
         if (isJumpInst(getType()) != NOT_JUMP)
         {
             static const int INST_LEN = 4;

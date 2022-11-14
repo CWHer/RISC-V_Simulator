@@ -36,7 +36,8 @@ public:
     {
         auto readReg = [reg_file, &capsule](unsigned pos)
         {
-            return (capsule.type != EMPTY && pos == capsule.dest)
+            return (capsule.type != EMPTY &&
+                    pos > 0 && pos == capsule.dest)
                        ? capsule.reg_result
                        : reg_file->read(pos);
         };

@@ -44,14 +44,17 @@ private:
             // WB.printInst();
             MEM.run(), WB.init(MEM);
             // MEM.printInst();
-            EXE.run(), MEM.init(EXE);
-            auto next_pc = ID.getInstAddr();
-            if (isRegDest(EXE.getType()))
+            if (isRegDest(MEM.getType()))
             {
+                // NOTE: FIXME: actually 1 cycle stall
                 static const int STALL_CYCLES = 2;
                 IF.putLock(STALL_CYCLES);
                 ID.putLock(STALL_CYCLES);
+                EXE.putLock(STALL_CYCLES);
+                MEM.forward(EXE);
             }
+            EXE.run(), MEM.init(EXE);
+            auto next_pc = ID.getInstAddr();
             if (EXE.checkBranchPred(next_pc))
             {
                 IF.reset(), ID.reset();
