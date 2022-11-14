@@ -208,19 +208,20 @@ public:
     void writeBack(RegisterFile *reg_file)
     {
         unsigned dest_reg = inst.rd;
+        // NOTE: HACK: pc is updated in EXE stage
         switch (inst.type)
         {
         // jump
         case JAL:
         {
             reg_file->write(dest_reg, reg_result);
-            reg_file->setPC(pc_result);
+            // reg_file->setPC(pc_result);
             break;
         }
         case JALR:
         {
             reg_file->write(dest_reg, reg_result);
-            reg_file->setPC(pc_result);
+            // reg_file->setPC(pc_result);
             break;
         }
         // branch
@@ -230,7 +231,7 @@ public:
         case BGE:
         case BLTU:
         case BGEU:
-            reg_file->setPC(pc_result);
+            // reg_file->setPC(pc_result);
             break;
         // load
         case LB:

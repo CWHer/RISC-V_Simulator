@@ -45,8 +45,12 @@ public:
         {
         case 0b1101111: // JAL
             basic_type = J;
+            is_branch = true;
+            break;
         case 0b1100111: // JALR (FIXME: not supported, always wrong)
             basic_type = I;
+            is_branch = true;
+            break;
         case 0b1100011: // BEQ, BNE, BLT, BGE, BLTU, BGEU
             basic_type = B;
             is_branch = true;

@@ -15,6 +15,7 @@ class Execute
 
 private:
     RegisterFile *reg_file;
+    PatternHistoryTable *predictor;
 
     ExecWrapper executable;
     bool is_done;
@@ -23,9 +24,10 @@ private:
     ForwardCapsule forward_capsule;
 
 public:
-    Execute(RegisterFile *reg_file)
-        : reg_file(reg_file), is_done(false),
-          wait_cycles(0), predict_error_cnt(0) {}
+    Execute(RegisterFile *reg_file,
+            PatternHistoryTable *predictor)
+        : reg_file(reg_file), predictor(predictor),
+          is_done(false), wait_cycles(0), predict_error_cnt(0) {}
 
     void reset()
     {
@@ -73,30 +75,24 @@ public:
         return executable.getType();
     }
 
-    // bool willJump() // can only use after run!
-    // {
-    //     return executable.temp_resultpc != 0;
-    // }
-
-    // bool checkBranchPred()
-    // {
-    //     if ((!executable.opt.willJump()) ^ (executable.temp_resultpc == 0)) // inconsistent
-    //     {
-    //         ++predict_error_cnt;
-    //         if (executable.temp_resultpc != 0)
-    //             return 0;
-    //     }
-    //     return 1;
-    // }
-
-    // void update(Predictor *prd) // feedback predictor
-    // {
-    //     InstructionTypes type = getType();
-    //     if (isJumpInst(type) != 1)
-    //         return;
-    //     prd->update(executable.gettype(), willJump() ? -1 : 1);
-    //     prd->push(executable.gettype(), willJump());
-    // }
+    bool checkBranchPred(unsigned next_pc)
+    {
+        if (isJumpInst(getType()) != NOT_JUMP)
+        {
+            static const int INST_LEN = 4;
+            bool is_jumped = executable.pc_result !=
+                             executable.instAddr() + INST_LEN;
+            predictor->update(executable.instAddr(), is_jumped ? -1 : 1);
+            if (next_pc != executable.pc_result)
+            {
+                // catastrophic condition: branch mis-predicted
+                predict_error_cnt++;
+                reg_file->setPC(executable.pc_result);
+                return true;
+            }
+        }
+        return false;
+    }
 
     int errorNum()
     {

@@ -92,8 +92,6 @@ private:
     {
         do
         {
-            if (total_cycles % 10000000 == 0)
-                std::cout << total_cycles << std::endl;
             // std::cout << "cycle: " << std::dec << total_cycles
             //           << ", pc: " << std::hex << reg_file.getPC() << std::endl;
             total_cycles += 5;
@@ -102,6 +100,7 @@ private:
             ID.init(IF), ID.run();
             // ID.printInst();
             EXE.init(ID), EXE.run();
+            EXE.checkBranchPred(reg_file.getPC());
             // EXE.printInst();
             MEM.init(EXE), MEM.run();
             // MEM.printInst();
@@ -115,7 +114,7 @@ public:
     Simulator(Memory *mem)
         : total_cycles(0), memory(mem),
           IF(mem, &reg_file, &predictor), ID(),
-          EXE(&reg_file), MEM(mem), WB(&reg_file) {}
+          EXE(&reg_file, &predictor), MEM(mem), WB(&reg_file) {}
 
     void setMode(Mode mode)
     {
@@ -135,7 +134,10 @@ public:
         }
     }
 
-    unsigned getResult() { return reg_file.getResult(); }
+    unsigned getResult()
+    {
+        return reg_file.getResult();
+    }
 
     void printStatics()
     {
