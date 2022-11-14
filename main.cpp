@@ -9,7 +9,7 @@ int main()
     // memory.printMemory();
 
     Simulator simulator(&memory);
-    simulator.setMode(Simulator::Mode::SERIAL);
+    simulator.setMode(Simulator::Mode::PIPELINE);
     simulator.run();
     simulator.printStatics();
     std::cout << std::dec << simulator.getResult() << std::endl;

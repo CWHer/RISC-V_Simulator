@@ -22,6 +22,8 @@ public:
     void reset()
     {
         inst.type = EMPTY;
+        // NOTE: HACK: deactivate inst.decode()
+        inst.inst_bytes = 0;
         wait_cycles = 0;
     }
 
@@ -58,9 +60,11 @@ public:
         return wait_cycles > 0;
     }
 
+    unsigned getInstAddr() { return inst.addr; }
+
     void printInst()
     {
-        std::cout << "[ID] Inst addr" << std::hex << inst.addr
+        std::cout << "[ID] Inst addr: " << std::hex << inst.addr
                   << ", Inst type: " << INST_STRING[inst.type] << std::endl;
     }
 };

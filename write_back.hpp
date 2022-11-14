@@ -37,14 +37,15 @@ public:
         if (!is_done)
         {
             executable.writeBack(reg_file);
-            commited_inst++;
+            if (executable.getType() != EMPTY)
+                commited_inst++;
         }
     }
 
     void printInst()
     {
-        std::cout << "[WB] Seq: " << commited_inst
-                  << ", Inst addr" << std::hex << executable.instAddr()
+        std::cout << "[WB] Seq: " << std::dec << commited_inst
+                  << ", Inst addr: " << std::hex << executable.instAddr()
                   << ", Inst type: " << INST_STRING[executable.getType()] << std::endl;
     }
 

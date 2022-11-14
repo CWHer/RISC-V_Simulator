@@ -101,7 +101,7 @@ public:
 
     void printInst()
     {
-        std::cout << "[EXE] Inst addr" << std::hex << executable.instAddr()
+        std::cout << "[EXE] Inst addr: " << std::hex << executable.instAddr()
                   << ", Inst type: " << INST_STRING[executable.getType()] << std::endl;
     }
 };

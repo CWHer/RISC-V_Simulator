@@ -78,7 +78,7 @@ public:
 
     void printInst()
     {
-        std::cout << "[MEM] Inst addr" << std::hex << executable.instAddr()
+        std::cout << "[MEM] Inst addr: " << std::hex << executable.instAddr()
                   << ", Inst type: " << INST_STRING[executable.getType()] << std::endl;
     }
 };

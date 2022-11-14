@@ -14,7 +14,7 @@ public:
     enum Mode
     {
         SERIAL,
-        PARALLEL
+        PIPELINE
     };
 
 private:
@@ -34,58 +34,37 @@ private:
 private:
     void runPipeline()
     {
-        // bool MEM2WB, isPB, isStall; // MEM->WB? putback? curisstall?
-        // memory->init_read();
-        // IF.init(memory, &reg_file);
-        // do
-        // {
-        //     // TODO
-        //     ++total_cycles, isPB = isStall = 0;
-        //     WB.run();
-        //     MEM.run();
-        //     MEM2WB = MEM.getType() != EMPTY;
-        //     WB.init(MEM);
-        //     if (!MEM.isLock() && MEM.getType() != EMPTY)
-        //         MEM.forward(EXE); // MEM->EXE
-        //     EXE.run();
-        //     if (!EXE.checkBranchPred()) // put back pipeline to last clk
-        //     {                           // jump&incorrect pred
-        //         reg_file.prevpc();
-        //         EXE.putback(ID);
-        //         EXE.reset();
-        //         ID.setJump();
-        //         isPB = 1;
-        //     }
-        //     if (EXE.willJump())
-        //         EXE.forwarding(IF); // EXE->IF
-        //     EXE.update(&prd);       // update predictor
-        //     MEM.init(EXE);
-        //     if (EXE.getType() != EMPTY || EXE.isEnd())
-        //     {
-        //         if (!isMemoryInst(EXE.getType())) // skip MEM if without SL
-        //         {
-        //             if (MEM2WB)      // structural hazard
-        //                 isStall = 1; // MEM->WB EXE->WB at same cycle
-        //             else             // stall 1 clk
-        //                 WB.init(MEM);
-        //             MEM.reset();
-        //         }
-        //         else
-        //             MEM.putwclk(3);
-        //     }
-        //     if (!isPB && !isStall)
-        //         ID.run();
-        //     if (ID.willJump()) // b-type:1+1+1/EXE->IF-1
-        //         IF.reset(), IF.putLock(2);
-        //     if (isMemoryInst(ID.getType())) // s&L:3+1/MEM->EXE-1
-        //         IF.reset(), IF.putLock(3);
-        //     if (!isStall)
-        //         EXE.init(ID);
-        //     if (!isStall)
-        //         IF.run();
-        //     if (!isStall)
-        //         ID.init(IF);
-        // } while (!WB.isEnd());
+        do
+        {
+            // std::cout << "cycle: " << std::dec << total_cycles
+            //           << ", pc: " << std::hex << reg_file.getPC() << std::endl;
+            total_cycles++;
+
+            WB.run();
+            // WB.printInst();
+            MEM.run(), WB.init(MEM);
+            // MEM.printInst();
+            EXE.run(), MEM.init(EXE);
+            auto next_pc = ID.getInstAddr();
+            if (isRegDest(EXE.getType()))
+            {
+                static const int STALL_CYCLES = 2;
+                IF.putLock(STALL_CYCLES);
+                ID.putLock(STALL_CYCLES);
+            }
+            if (EXE.checkBranchPred(next_pc))
+            {
+                IF.reset(), ID.reset();
+                // std::cout << "==========Reset==========" << std::endl;
+            }
+            // EXE.printInst();
+            ID.run(), EXE.init(ID);
+            // ID.printInst();
+            IF.run(), ID.init(IF);
+            // IF.printInst();
+
+            // reg_file.printRegfile();
+        } while (!WB.isDone());
     }
 
     void runSerial()
@@ -128,7 +107,7 @@ public:
         case SERIAL:
             runSerial();
             break;
-        case PARALLEL:
+        case PIPELINE:
             runPipeline();
             break;
         }

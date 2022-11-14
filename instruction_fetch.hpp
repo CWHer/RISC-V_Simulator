@@ -32,18 +32,23 @@ public:
 
     void run()
     {
-        // clang-format off
-        if (--wait_cycles > 0) return;
-        // clang-format on
-
-        is_done = inst.fetch(memory, reg_file);
         if (!is_done)
         {
-            if (inst.fastDecode() &&
-                predictor->predict(inst.addr))
-                reg_file->setPC(inst.addr + inst.imm);
-            else
-                reg_file->nextPC();
+            // clang-format off
+            if (--wait_cycles > 0) return;
+            // clang-format on
+
+            is_done = inst.fetch(memory, reg_file);
+            if (!is_done)
+            {
+                // HACK: ignore JALR
+                if (inst.fastDecode() &&
+                    inst.basic_type != I &&
+                    predictor->predict(inst.addr))
+                    reg_file->setPC(inst.addr + inst.imm);
+                else
+                    reg_file->nextPC();
+            }
         }
     }
 
@@ -64,7 +69,7 @@ public:
 
     void printInst()
     {
-        std::cout << "[IF] Inst addr" << std::hex << inst.addr
+        std::cout << "[IF] Inst addr: " << std::hex << inst.addr
                   << ", Inst type: " << INST_STRING[inst.type] << std::endl;
     }
 };
