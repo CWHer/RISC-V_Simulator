@@ -6,74 +6,95 @@
 class Memory
 {
 private:
-    // static const int maxN=100;
-    static const int maxN = 1 << 20;
-    unsigned data[maxN + 50], cnt;
-    char seq[20];
-    char get()
+    static const int MAX_N = 1 << 20;
+    std::vector<unsigned> storage;
+    char bytes_buf[20];
+
+    char getChar()
     {
         char ch = getchar();
-        while ((~ch) && ch != '@' && !isdigit(ch) && !isupper(ch))
+        while (ch != -1 && ch != '@' &&
+               !isdigit(ch) && !isupper(ch))
             ch = getchar();
         return ch;
     }
-    unsigned seq2int(char *seq) // base 16
+
+    unsigned Bytes2Int(int n_bytes = 2) // base 16
     {
-        int len = std::strlen(seq);
+        static const unsigned HEX_BASE = 16;
         unsigned ret = 0;
-        for (int i = 0; i < len; ++i)
-            ret = ret * 16 + (unsigned)(seq[i] >= 'A' ? seq[i] - 'A' + 10 : seq[i] - '0');
+        for (int i = 0; i < n_bytes; ++i)
+        {
+            char ch = bytes_buf[i];
+            ret = ret * HEX_BASE + (unsigned)(ch >= 'A' ? ch - 'A' + 10 : ch - '0');
+        }
         return ret;
     }
 
 public:
-    Memory()
+    Memory(const char *fname = "input.data") : storage(MAX_N)
     {
-        cnt = 0;
-        freopen("in", "r", stdin);
-        std::memset(data, 0, sizeof(data));
-        std::memset(seq, 0, sizeof(seq));
-    }
-    Memory(const char *fname)
-    {
-        cnt = 0;
         freopen(fname, "r", stdin);
-        std::memset(data, 0, sizeof(data));
-        std::memset(seq, 0, sizeof(seq));
+        std::memset(bytes_buf, 0, sizeof(bytes_buf));
     }
-    ~Memory()
+
+    ~Memory() { fclose(stdin); }
+
+    void initMemory()
     {
-        fclose(stdin);
-    }
-    void init_read()
-    {
-        char ch = getchar();
-        while (~ch)
+        unsigned current_addr = 0;
+        char current_char = getchar();
+        while (current_char != -1)
         {
-            if (ch == '@')
+            if (current_char == '@')
             {
-                for (int i = 0; i < 8; ++i)
-                    seq[i] = get();
-                cnt = seq2int(seq);
+                // address
+                static const int ADDR_LEN = 8;
+                for (auto i = 0; i < ADDR_LEN; ++i)
+                    bytes_buf[i] = getChar();
+                current_addr = Bytes2Int(ADDR_LEN);
             }
             else
             {
-                seq[0] = ch, seq[1] = get(), seq[2] = 0;
-                data[cnt++] = seq2int(seq);
+                // one byte
+                bytes_buf[0] = current_char;
+                bytes_buf[1] = getChar();
+                storage[current_addr++] = Bytes2Int();
             }
-            ch = get();
+            current_char = getChar();
         }
     }
-    void store(unsigned pos, unsigned val, int sz)
+
+    void printMemory()
     {
-        for (int i = 0; i < sz; ++i)
-            data[pos + i] = val & 255, val >>= 8;
+        std::cout << "Memory:" << std::endl;
+        for (auto i = 0; i < MAX_N; ++i)
+            if (storage[i] != 0)
+                std::cout << "Addr " << std::hex << i
+                          << std::setw(2) << std::setfill('0')
+                          << " : " << storage[i] << '\n';
+        std::cout << std::dec << std::endl;
     }
-    unsigned load(unsigned pos, int sz)
+
+    void store(unsigned addr, unsigned bytes_value, int n_bytes)
     {
+        static const unsigned BYTE_MASK = 0xff;
+        static const unsigned BYTE_OFFSET = 8;
+
+        for (int i = 0; i < n_bytes; ++i)
+        {
+            storage[addr + i] = bytes_value & BYTE_MASK;
+            bytes_value >>= BYTE_OFFSET;
+        }
+    }
+
+    unsigned load(unsigned addr, int n_bytes)
+    {
+        static const unsigned BYTE_OFFSET = 8;
+
         unsigned ret = 0;
-        for (int i = sz - 1; ~i; --i)
-            ret = (ret << 8) + data[pos + i];
+        for (int i = n_bytes - 1; i >= 0; --i)
+            ret = (ret << BYTE_OFFSET) + storage[addr + i];
         return ret;
     }
 };

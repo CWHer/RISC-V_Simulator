@@ -3,62 +3,69 @@
 
 #include "instruction.hpp"
 #include "memory.hpp"
-#include "register.hpp"
+#include "register_file.hpp"
 
 class InstructionFetch
 {
     friend class InstructionDecode;
-    friend class Execute;
 
 private:
-    Instruction opt;
-    Register *reg;
-    Memory *mem;
-    bool isend;
-    int wait_clk;
-    forward fwd;
+    Memory *memory;
+    RegisterFile *reg_file;
+    PatternHistoryTable *predictor;
+
+    Instruction inst;
+    bool is_done;
+    int wait_cycles;
 
 public:
-    InstructionFetch() : isend(0), wait_clk(0) {}
-    void init(Memory *_mem, Register *_reg)
+    InstructionFetch(Memory *mem, RegisterFile *reg_file,
+                     PatternHistoryTable *predictor)
+        : memory(mem), reg_file(reg_file),
+          predictor(predictor), is_done(false), wait_cycles(0) {}
+
+    void reset()
     {
-        mem = _mem;
-        reg = _reg;
+        inst.type = EMPTY;
+        wait_cycles = 0;
     }
-    void reset() // reset to EMPTY
-    {
-        opt.reset();
-        fwd.reset();
-        wait_clk = 0;
-    }
+
     void run()
     {
-        if (wait_clk > 0)
+        // clang-format off
+        if (--wait_cycles > 0) return;
+        // clang-format on
+
+        is_done = inst.fetch(memory, reg_file);
+        if (!is_done)
         {
-            --wait_clk;
-            if (wait_clk)
-                return;
+            if (inst.fastDecode() &&
+                predictor->predict(inst.addr))
+                reg_file->setPC(inst.addr + inst.imm);
+            else
+                reg_file->nextPC();
         }
-        isend = opt.fetch(mem, reg, fwd);
-        fwd.reset();
-        if (isend)
-            reset();
     }
-    void putwclk(int clk) // put wait clk
+
+    void putLock(int cycles)
     {
-        wait_clk += clk;
+        wait_cycles = cycles;
     }
-    bool isEnd()
+
+    bool isDone()
     {
-        return isend;
+        return is_done;
     }
-    Instructiontypes gettype()
-    {
-        return opt.gettype();
-    }
+
     bool isLock()
     {
-        return wait_clk > 0;
+        return wait_cycles > 0;
+    }
+
+    void printInst()
+    {
+        std::cout << "[IF] Inst addr" << std::hex << inst.addr
+                  << ", Inst type: " << INST_STRING[inst.type] << std::endl;
     }
 };
 

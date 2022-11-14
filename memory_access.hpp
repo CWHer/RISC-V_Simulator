@@ -3,8 +3,8 @@
 
 #include "instruction.hpp"
 #include "memory.hpp"
-#include "register.hpp"
-#include "executor.hpp"
+#include "register_file.hpp"
+#include "executable.hpp"
 #include "execute.hpp"
 
 class MemoryAccess
@@ -12,67 +12,74 @@ class MemoryAccess
     friend class WriteBack;
 
 private:
-    Register *reg;
-    Memory *mem;
-    Executor exe;
-    bool isend;
-    int wait_clk;
-    forward fwd;
+    Memory *memory;
+
+    ExecWrapper executable;
+    bool is_done;
+    int wait_cycles;
+    ForwardCapsule forward_capsule;
 
 public:
-    MemoryAccess() : isend(0), wait_clk(0) {}
+    MemoryAccess(Memory *mem)
+        : memory(mem), is_done(false), wait_cycles(0) {}
+
+    void reset()
+    {
+        executable.reset();
+        forward_capsule.reset();
+        wait_cycles = 0;
+    }
+
     void init(Execute &EXE)
     {
-        if (isLock())
-            return;
-        reset();
-        if (EXE.isLock())
-            return;
-        reg = EXE.reg;
-        mem = EXE.mem;
-        exe = EXE.exe;
-        isend = EXE.isend;
+        // clang-format off
+        if (this->isLock()) return;
+        this->reset();
+        if (EXE.isLock()) return;
+        // clang-format on
+
+        executable = EXE.executable;
+        is_done = EXE.is_done;
     }
-    void reset() // reset to EMPTY
-    {
-        exe.reset();
-        fwd.reset();
-        wait_clk = 0;
-    }
+
     void run()
     {
-        if (isend)
-            return;
-        if (wait_clk > 0)
+        if (!is_done)
         {
-            --wait_clk;
-            if (wait_clk)
-                return;
+            // clang-format off
+            if (--wait_cycles > 0) return;
+            // clang-format on
         }
-        exe.memory_access(mem, reg);
-        if (isSL(gettype()) == 1)
-            fwd = exe.genfwd();
+        executable.memoryAccess(memory);
+        if (isRegDest(executable.getType()))
+            forward_capsule = executable.makeForward();
     }
-    void forwarding(Execute &EXE)
+
+    void forward(Execute &EXE)
     {
-        EXE.fwd = fwd;
-        fwd.reset();
+        EXE.forward_capsule = forward_capsule;
+        forward_capsule.reset();
     }
-    void putwclk(int clk) // put wait clk
+
+    void putLock(int cycles)
     {
-        wait_clk += clk;
+        wait_cycles = cycles;
     }
-    bool isEnd()
-    {
-        return isend;
-    }
-    Instructiontypes gettype()
-    {
-        return exe.gettype();
-    }
+
     bool isLock()
     {
-        return wait_clk > 0;
+        return wait_cycles > 0;
+    }
+
+    InstructionTypes getType()
+    {
+        return executable.getType();
+    }
+
+    void printInst()
+    {
+        std::cout << "[MEM] Inst addr" << std::hex << executable.instAddr()
+                  << ", Inst type: " << INST_STRING[executable.getType()] << std::endl;
     }
 };
 

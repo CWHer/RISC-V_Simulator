@@ -4,39 +4,42 @@
 #include "RISC-V.h"
 #include "counter2.hpp"
 
-class Predictor
+// Pattern History Table
+class PatternHistoryTable
 {
 private:
-    static const int N = 3;
-    Counter2 cnt[6][1 << N]; // BEQ BNE BLT BGE BLTU BGEU 6types
-    bool buf[6][N];
+    static const int N_BITS = 10;
+    // assign a 2 bit counter to each address
+    Counter2 buf[1 << N_BITS];
+    int total_predict;
+
+    unsigned hashAddr(unsigned addr)
+    {
+        static const unsigned HIGH_OFFSET = 5;
+        static const unsigned CONCAT_OFFSET = HIGH_OFFSET - 5;
+        static const unsigned HIGH_MASK = 0x1f << HIGH_OFFSET;
+        static const unsigned LOW_MASK = 0x1f;
+        unsigned hash_value = ((addr & HIGH_MASK) >> CONCAT_OFFSET) + (addr & LOW_MASK);
+        assert(hash_value < (1 << N_BITS));
+        return hash_value;
+    }
 
 public:
-    int tot;
-    Predictor() : tot(0) {}
-    void push(Instructiontypes type, bool cur)
+    PatternHistoryTable() : total_predict(0) {}
+
+    int getTotalPredict() { return total_predict; }
+
+    void update(unsigned addr, int is_jumped)
     {
-        int k = type - BEQ;
-        for (int i = 1; i < N; ++i)
-            buf[k][i - 1] = buf[k][i];
-        buf[k][N - 1] = cur;
+        total_predict++;
+        auto hash_value = hashAddr(addr);
+        buf[hash_value].update(is_jumped);
     }
-    void update(Instructiontypes type, int dir)
+
+    bool predict(unsigned addr)
     {
-        int k = type - BEQ;
-        unsigned num = 0;
-        for (int i = 0; i < N; ++i)
-            num = num << 1 | buf[k][i];
-        cnt[k][num].update(dir);
-    }
-    bool willJump(Instructiontypes type)
-    {
-        ++tot;
-        int k = type - BEQ;
-        unsigned num = 0;
-        for (int i = 0; i < N; ++i)
-            num = num << 1 | buf[k][i];
-        return cnt[k][num].willJump();
+        auto hash_value = hashAddr(addr);
+        return buf[hash_value].predict();
     }
 };
 

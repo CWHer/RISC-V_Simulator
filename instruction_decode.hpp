@@ -3,7 +3,7 @@
 
 #include "instruction.hpp"
 #include "memory.hpp"
-#include "register.hpp"
+#include "register_file.hpp"
 #include "predictor.hpp"
 #include "instruction_fetch.hpp"
 
@@ -12,73 +12,56 @@ class InstructionDecode
     friend class Execute;
 
 private:
-    Instruction opt;
-    Register *reg;
-    Memory *mem;
-    Predictor *prd;
-    bool isend;
-    int wait_clk;
+    Instruction inst;
+    bool is_done;
+    int wait_cycles;
 
 public:
-    InstructionDecode(Predictor *_prd) : isend(0), wait_clk(0), prd(_prd) {}
+    InstructionDecode() : is_done(false), wait_cycles(0) {}
+
+    void reset()
+    {
+        inst.type = EMPTY;
+        wait_cycles = 0;
+    }
+
     void init(InstructionFetch &IF)
     {
-        if (isLock())
-            return;
-        reset();
-        if (IF.isLock())
-            return;
-        opt = IF.opt;
-        reg = IF.reg;
-        mem = IF.mem;
-        isend = IF.isend;
+        // clang-format off
+        if (this->isLock()) return;
+        this->reset();
+        if (IF.isLock()) return;
+        // clang-format on
+
+        inst = IF.inst;
+        is_done = IF.is_done;
     }
-    void putback(InstructionFetch &IF)
-    {
-        IF.reg = reg;
-        IF.mem = mem;
-        IF.opt = opt;
-    }
-    void reset() // reset to EMPTY
-    {
-        opt.reset();
-        wait_clk = 0;
-    }
+
     void run()
     {
-        if (wait_clk > 0)
+        if (!is_done)
         {
-            --wait_clk;
-            if (wait_clk)
-                return;
+            // clang-format off
+            if (--wait_cycles > 0) return;
+            // clang-format on
+            inst.decode();
         }
-        if (isend)
-            return;
-        opt.decode(prd);
     }
-    void putwclk(int clk) // put wait clk
+
+    void putLock(int cycles)
     {
-        wait_clk += clk;
+        wait_cycles = cycles;
     }
-    bool isEnd()
-    {
-        return isend;
-    }
-    Instructiontypes gettype()
-    {
-        return opt.gettype();
-    }
+
     bool isLock()
     {
-        return wait_clk > 0;
+        return wait_cycles > 0;
     }
-    bool willJump()
+
+    void printInst()
     {
-        return opt.willJump();
-    }
-    void setJump()
-    {
-        opt.willJump() = 1;
+        std::cout << "[ID] Inst addr" << std::hex << inst.addr
+                  << ", Inst type: " << INST_STRING[inst.type] << std::endl;
     }
 };
 

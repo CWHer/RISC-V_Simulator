@@ -4,102 +4,70 @@
 #include <cstdio>
 #include <iostream>
 #include <cstring>
+#include <vector>
 #include <iomanip>
+#include <map>
+#include <set>
+#include <cassert>
 
-enum States
+// clang-format off
+enum BasicTypes
 {
-    ST,
-    WT,
-    WNT,
-    SNT
-}; // S:strongly    W:weakly    N:not   T:take
-enum Basictypes
-{
-    R,
-    I,
-    S,
-    B,
-    U,
-    J
+    R, I, S, B, U, J
 };
-enum Instructiontypes
+
+enum InstructionTypes
 {
-    LUI,
-    AUIPC,
-    JAL,
-    JALR,
-    BEQ,
-    BNE,
-    BLT,
-    BGE,
-    BLTU,
-    BGEU,
-    LB,
-    LH,
-    LW,
-    LBU,
-    LHU,
-    SB,
-    SH,
-    SW,
-    ADDI,
-    SLTI,
-    SLTIU,
-    XORI,
-    ORI,
-    ANDI,
-    SLLI,
-    SRLI,
-    SRAI,
-    ADD,
-    SUB,
-    SLL,
-    SLT,
-    SLTU,
-    XOR,
-    SRL,
-    SRA,
-    OR,
-    AND,
+    LUI, AUIPC, JAL, JALR,
+    BEQ, BNE, BLT, BGE, BLTU, BGEU,
+    LB, LH, LW, LBU, LHU, SB, SH, SW,
+    ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI, 
+    ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
     EMPTY
 };
-struct forward
+// clang-format on
+
+struct ForwardCapsule
 {
-    Instructiontypes type;
-    unsigned rd, temp_result, temp_resultpc;
-    forward()
-    {
-        type = EMPTY;
-        rd = temp_result = temp_resultpc = 0;
-    }
-    forward(Instructiontypes _type, unsigned _rd,
-            unsigned _temp_result, unsigned _temp_resultpc)
-        : type(_type), rd(_rd),
-          temp_result(_temp_result),
-          temp_resultpc(_temp_resultpc) {}
+    InstructionTypes type;
+    unsigned dest, reg_result;
+
+    ForwardCapsule() : type(EMPTY), dest(0), reg_result(0) {}
+
+    ForwardCapsule(InstructionTypes type,
+                   unsigned rd, unsigned reg_result)
+        : type(type), dest(rd), reg_result(reg_result) {}
+
     void reset()
     {
         type = EMPTY;
-        rd = temp_result = temp_resultpc = 0;
+        dest = reg_result = 0;
     }
 };
-const char *str[] =
-    {
-        "LUI", "AUIPC", "JAL", "JALR",
-        "BEQ", "BNE", "BLT", "BGE", "BLTU", "BGEU",
-        "LB", "LH", "LW", "LBU", "LHU", "SB", "SH", "SW",
-        "ADDI", "SLTI", "SLTIU", "XORI", "ORI", "ANDI",
-        "SLLI", "SRLI", "SRAI",
-        "ADD", "SUB", "SLL", "SLT", "SLTU", "XOR", "SRL", "SRA", "OR", "AND",
-        "EMPTY"};
+
+const char *INST_STRING[] = {
+    "LUI", "AUIPC", "JAL", "JALR",
+    "BEQ", "BNE", "BLT", "BGE", "BLTU", "BGEU",
+    "LB", "LH", "LW", "LBU", "LHU", "SB", "SH", "SW",
+    "ADDI", "SLTI", "SLTIU", "XORI", "ORI", "ANDI", "SLLI", "SRLI", "SRAI",
+    "ADD", "SUB", "SLL", "SLT", "SLTU", "XOR", "SRL", "SRA", "OR", "AND",
+    "EMPTY"};
+
+// utils
 unsigned sext(unsigned x, int n) // sign-extend
 {
     return (x >> n) & 1 ? x | 0xffffffff >> n << n : x;
 }
-unsigned setlow0(unsigned x) { return (x | 1) ^ 1; }
-int isJump(Instructiontypes type)
+
+enum JumpTypes
 {
-    int ret = 0;
+    NOT_JUMP,
+    CONDITIONAL_JUMP,
+    UNCONDITIONAL_JUMP
+};
+
+JumpTypes isJumpInst(InstructionTypes type)
+{
     switch (type)
     {
     case BEQ:
@@ -108,18 +76,24 @@ int isJump(Instructiontypes type)
     case BGE:
     case BLTU:
     case BGEU:
-        ret = 1;
-        break;
+        return CONDITIONAL_JUMP;
     case JAL:
     case JALR:
-        ret = 2;
-        break;
+        return UNCONDITIONAL_JUMP;
+    default:
+        return NOT_JUMP;
     }
-    return ret;
 }
-int isSL(Instructiontypes type)
+
+enum MemTypes
 {
-    int ret = 0;
+    NOT_MEM,
+    MEM_LOAD,
+    MEM_STORE
+};
+
+MemTypes isMemoryInst(InstructionTypes type)
+{
     switch (type)
     {
     case LB:
@@ -127,15 +101,25 @@ int isSL(Instructiontypes type)
     case LW:
     case LBU:
     case LHU:
-        ret = 1;
-        break;
+        return MEM_LOAD;
     case SB:
     case SH:
     case SW:
-        ret = 2;
-        break;
+        return MEM_STORE;
+    default:
+        return NOT_MEM;
     }
-    return ret;
+}
+
+bool isRegDest(InstructionTypes type)
+{
+    std::set<InstructionTypes> reg_dest_types = {
+        LUI, AUIPC, JAL, JALR,
+        LB, LH, LW, LBU, LHU,
+        ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
+        ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND};
+
+    return reg_dest_types.count(type) > 0;
 }
 
 #endif
